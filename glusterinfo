@@ -1,0 +1,15 @@
+# -*- coding: utf-8 -*-
+import os,re
+fo = open(r"c:\a.txt")
+info = fo.readlines()
+fo.close()
+diskinfo ={}
+for line in info :
+    item=line.strip('\n').split(":")[0]
+    value=line.strip('\n').split(":")[1]
+    if  re.match('disk[0-9]+',item):
+        diskinfo['disk']= diskinfo['disk']+item+":"+value+"#"
+    else:
+        diskinfo[item] = value
+print diskinfo
+
