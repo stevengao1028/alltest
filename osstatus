@@ -1,0 +1,89 @@
+#-*- coding:utf-8 -*-
+'''return the info of /proc/*
+    as a each method
+    '''
+import os,time,socket
+
+def cpu_rate():
+    '''return the info of /proc/cpuinfo
+        as a count of percount
+        '''
+    def cpu_r():
+        f = open("/proc/stat", "r")
+        for f_line in f:
+            break
+        f.close()
+        f_line = f_line.split(" ")
+        f_line_a = []
+        for i in f_line:
+            if i.isdigit():
+                i = int(i)
+                f_line_a.append(i)
+        total = sum(f_line_a)
+        idle = f_line_a[3]
+        return total, idle
+
+    total_a, idle_a = cpu_r()
+    time.sleep(2)
+    total_b, idle_b = cpu_r()
+
+    sys_idle = idle_b - idle_a
+    sys_total = total_b - total_a
+    sys_us = sys_total - sys_idle
+
+    cpu_a = (float(sys_us) / sys_total) * 100
+    # print cpu_a
+    return cpu_a
+
+
+def mem_info(request):
+    '''return the info of /proc/meminfo
+    as a dictionary
+    '''
+    meminfo = {}
+    f = open('/proc/meminfo')
+    for line in f:
+        meminfo[line.split(':')[0]]=line.split(':')[1].strip()
+    if request == "total":
+        return meminfo['MemTotal']
+    elif request == "free":
+        return meminfo['MemFree']
+    else:
+        pass
+
+
+# if __name__ == '__main__':
+#     meminfo = meminfo()
+
+    # print("Total memory:{0}".format(meminfo['MemTotal']))
+    # print("Free memory:{0}".format(meminfo['MemFree']))
+
+def uptime_stat():
+    '''return the info of /proc/meminfo
+        as a dictionary
+    '''
+    uptime = {}
+    f = open("/proc/uptime")
+    con = f.read().split()
+    f.close()
+    all_sec = float(con[0])
+    MINUTE,HOUR,DAY = 60,3600,86400
+    day=int(all_sec / DAY )
+    hour=int((all_sec % DAY) / HOUR)
+    minute=int((all_sec % HOUR) / MINUTE)
+    uptime={'day':day,'hour':hour,'minnute':minute}
+    # uptime['day'] = int(all_sec / DAY )
+    # uptime['hour'] = int((all_sec % DAY) / HOUR)
+    # uptime['minute'] = int((all_sec % HOUR) / MINUTE)
+    # uptime['second'] = int(all_sec % MINUTE)
+    # uptime['Free rate'] = float(con[1]) / float(con[0])
+    return uptime
+
+# print uptime_stat()
+# print mem_info("total")
+# print mem_info("free")
+# print cpu_rate()
+if __name__ == '__main__':
+    meminfo = mem_info()
+    uptime_stat = uptime_stat()
+    cpu_rate = cpu_rate()
