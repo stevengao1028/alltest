@@ -1,0 +1,14 @@
+# -*- coding: utf-8 -*-
+import os,re
+fo =os.popen('gluster volume info')
+info = fo.readlines()[1:]
+diskinfo ={}
+for line in info :
+    item=line.strip('\n').split(":")[0]
+    value=line.strip('\n').split(":")[1]
+    if  re.match('Brick[0-9]+',item):
+        diskinfo['Bricks']= diskinfo['Bricks']+item+":"+value+"##"
+    else:
+        diskinfo[item] = value
+#print diskinfo
+print diskinfo['Bricks']
