@@ -1,0 +1,19 @@
+# -*- coding: utf-8 -*-
+import os,re
+fo =os.popen('gluster volume info')
+info = fo.readlines()
+volinfo={}
+vol=[]
+for line in info :
+    if line.strip(): 
+       item=line.strip('\n').split(":",1)[0]
+       value=line.strip('\n').split(":",1)[1]
+       if  re.match('Brick[0-9]+',item):
+           volinfo['Bricks']= volinfo['Bricks']+value+"##"
+       else:
+           volinfo[item] = value
+    else:
+       volinfo={}
+       vol.append(volinfo)
+print vol
+#遍历信息，区分冒号左右将信息存入字典，在以空行为分段存入列表
