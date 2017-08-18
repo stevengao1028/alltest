@@ -1,0 +1,393 @@
+#!/bin/bash
+export LANG=en_US-UTF8
+UNI_DIR=$(cd "$(dirname "$0")";cd ..;pwd)
+SHARED_DIR=/unistorage/shared_dir
+ROOT_DIR=/unistorage
+LOG_DIR=$UNI_DIR/log/unistorage.log
+HOSTHEAD=node
+gluster=/usr/sbin/gluster
+prog=`basename $0`
+pid=$$
+time=10
+. $UNI_DIR/script/uniwhale-function
+
+##check fstab status
+if [ ! -s /etc/fstab ];then
+	mount -o remount,rw /
+	mv -f $UNI_DIR/tmp/fstab.bak /etc/fstab 1>/dev/null 2>/dev/null
+	mount -a
+	systemctl restart glusterd 1>/dev/null 2>/dev/null
+fi
+
+if [ -n "`ps -ef|grep $prog|egrep -v "vi|more|grep|$pid"`" ];then
+        exit
+fi
+
+##check glusterfs service status
+
+if [ `systemctl is-failed glusterd` != "active" ];then
+	systemctl restart glusterd 1>/dev/null 2>/dev/null
+fi
+while [ 1 ]
+do
+        systemctl status glusterd 1>/dev/null 2>/dev/null
+        if [ $? -ne 0 ];then
+                sleep 5
+                continue
+        else
+                break
+        fi
+done
+
+
+GEN_CLUSTER_STAT()
+{
+        #generate random num
+        RANDOM_NUM=`cat /proc/sys/kernel/random/uuid|awk -F"-" '{print $1}'`
+        #catch cluster message
+        $gluster volume info 2>/dev/null >>/dev/shm/cluster_info
+        $gluster volume status 2>/dev/null >>/dev/shm/cluster_info
+	sed -i "1 i HEAD_OF_RECORD" /dev/shm/cluster_info
+        sed -i "1 a RANDOM_NUM=$RANDOM_NUM" /dev/shm/cluster_info
+        echo "END_OF_RECORD!" >>/dev/shm/cluster_info
+}
+
+$UNI_DIR/script/pre-check
+
+#### set ctdb count
+count_ctdb=0
+
+#### set mariadb count
+count_mysql0=0
+count_mysql1=0
+
+#### master process
+while [ 1 ]
+do
+	ROLE=`cat $UNI_DIR/config/nodeinfo|awk -F"=" '$1=="ROLE" {print $2}'`
+	HOSTNAME=`hostname`
+
+	if [ "$ROLE" = "First" -o "$ROLE" = "Second" ];then
+        	chk_web $HOSTNAME
+        	if [ -n "`gluster peer status|grep "Number of Peers:"`" ];then
+                	PEER_NODE=`cat $UNI_DIR/config/nodeinfo|egrep "FirstPeer|SecondPeer"|awk -F"=" '{print $2}'`
+			systemctl status mariadb
+			if [ $? -ne 0 ];then
+				systemctl restart mariadb 1>/dev/null 2>/dev/null
+				count_mysql0=0
+				count_mysql1=0
+			fi
+			ping $PEER_NODE -c 3 -W 1
+			RET=$?
+                	if [ $RET -eq 0 ];then
+				Slave_SQL_Running=`ConnectDB "show slave status\G"|egrep "Slave_SQL_Running"|awk '{print $2}'`
+				Slave_IO_Running=`ConnectDB "show slave status\G"|egrep "Slave_IO_Running"|awk '{print $2}'`
+				if [ "$Slave_SQL_Running" = "No" -o "$Slave_IO_Running" = "No" ];then
+					if [ -n "`ConnectDB "show slave status\G"|egrep "Last_IO_Error|Last_SQL_Error"|awk -F":" '{print $2}'`" ];then
+						systemctl restart mariadb 1>/dev/null 2>/dev/null
+						count_mysql0=1
+					else
+						count_mysql0=`expr $count_mysql0 + 1`
+						if [ "$count_mysql0" -eq 6 ];then
+							$UNI_DIR/script/sync_mysql $PEER_NODE 2>/dev/null
+							count_mysql0=0
+							count_mysql1=0
+						fi
+					fi
+				fi
+
+				if [ "$Slave_SQL_Running" = "Yes" ] && [ "$Slave_IO_Running" = "Connecting" ];then
+					count_mysql1=`expr $count_mysql1 + 1`
+					if [ "$count_mysql1" -eq 5 ];then
+                                		$UNI_DIR/script/sync_mysql $PEER_NODE 2>/dev/null
+						count_mysql1=0
+						count_mysql0=0
+					fi
+                        	fi
+				if [ "$Slave_SQL_Running" = "Yes" ] && [ "$Slave_IO_Running" = "Yes" ];then
+					count_mysql0=0
+                                	count_mysql1=0
+				fi
+                	fi
+        	fi
+	fi
+
+
+	#check system log deamon
+	if [ -z "`ps -ef|grep get_status|egrep -v "grep|vi"`" ];then
+        	sh $UNI_DIR/script/get_status &
+	fi
+
+	if [ -z "`ps -ef|grep get_alarm|egrep -v "grep|vi"`" ];then
+        	sh $UNI_DIR/script/get_alarm &
+	fi
+
+	if [ -z "`ps -ef|grep get_disk_status|egrep -v "grep|vi"`" ];then
+		cdate=`date +%F`
+		sed -i '$ d' $UNI_DIR/log/alarm/$cdate.diststat
+        	sh $UNI_DIR/script/get_disk_status &
+	fi
+
+	#disable firewalld
+	systemctl status firewalld 1>/dev/null 2>/dev/null && systemctl stop firewalld.service
+
+	#add guest user
+	guestid=`cat /etc/passwd|awk -F":" '$1 == "guest" {print $3}'`
+	if [ -z "$guestid" ];then
+        	useradd -M -s /sbin/nologin guest 1>/dev/null 2>/dev/null
+        	usermod -d "" guest 1>/dev/null 2>/dev/null
+	fi
+
+	#check fstab
+	for i in `cat /etc/fstab |grep "UUID="|sed 's/UUID=\([^ ]*\) .*/\1/'`
+	do
+        	if [ -z "`ls /dev/disk/by-uuid|grep $i`" ];then
+                	sed -i "/$i/d" /etc/fstab
+        	fi
+	done
+
+	#exprotfs
+
+	exportfs -ar 1>/dev/null 2>/dev/null 
+
+	#check service deamon
+	systemctl status glusterd 1>/dev/null 2>/dev/null
+	if [ $? -ne 0 ];then
+		sleep $time
+		continue
+	fi
+
+	if [ "$ROLE" = "First" -o "$ROLE" = "Second" ];then
+                $gluster peer status 2>/dev/null >/dev/shm/cluster_info
+		if [ `cat /dev/shm/cluster_info|grep "Number of Peers"|awk -F: '{print $2}'` -ne 0 ];then
+			systemctl status keepalived 1>/dev/null 2>/dev/null || systemctl start keepalived
+			sed -i '/^\/single/d' /etc/fstab
+                fi
+                        GEN_CLUSTER_STAT
+        fi
+
+	#check cluster status
+	mkdir -p  $SHARED_DIR 2>/dev/null
+	if [ -z "`mount|grep -w "$SHARED_DIR"`" ];then
+		nohup mount -t glusterfs $HOSTNAME:vol0 $SHARED_DIR 2>/dev/null
+	fi
+
+        parm=`mount|grep -w "$SHARED_DIR"`
+        if [ -z "$parm" ];then
+		sleep $time
+                continue
+	fi
+	if [ -n "$parm" ];then
+		if [ `systemctl is-failed vsftpd` != "active" -o -n "`systemctl status vsftpd|grep Process|grep "status=1/FAILURE"`" ];then
+                        systemctl restart vsftpd 1>/dev/null 2>/dev/null
+                fi
+
+	fi
+		
+	if [ ! -d $SHARED_DIR/tmp ];then
+        	mkdir -p $SHARED_DIR/tmp
+        fi
+        cat /dev/shm/cluster_info >$SHARED_DIR/tmp/cluster_info
+
+## check ctdb status
+	systemctl status ctdb 1>/dev/null 2>/dev/null
+	ret=$?
+	if [ -s /etc/ctdb/nodes ] && [ -z `ctdb status|grep "THIS NODE"|grep DISCONNECTED` ];then
+		count_ctdb=`expr $count_ctdb + 1`
+		if [ "$count_ctdb" -eq 10 ];then
+			systemctl restart ctdb 1>/dev/null 2>/dev/null
+			count_ctdb=0
+		fi
+	fi
+	if [ -s /etc/ctdb/nodes -a `ctdb status|grep "THIS NODE"|awk '{print $3}'` = "OK" ];then
+		count_ctdb=0
+	fi
+
+	if [ -s /etc/ctdb/nodes -a $ret -ne 0 ];then
+		systemctl restart ctdb 1>/dev/null 2>/dev/null
+		count_ctdb=0
+	else
+		currip=`cat /etc/hosts|grep -w $HOSTNAME|awk '{print $1}'`
+		cat /dev/null >/dev/shm/generationid
+		if [ -n "$currip" ];then
+			for node in `cat /etc/ctdb/nodes|grep -vw $currip`
+			do
+				if [ -n "`ping $node -c 2 -W 1 2>/dev/null|grep "time=[0-9][0-9]*"`" ];then
+					$UNI_DIR/script/u_ssh $node "ctdb status|grep Generation:|awk -F: '{print $2}'|sed 's/ //g' " >>/dev/shm/generationid
+				else
+					if [ "$ROLE" = "First" -o "$ROLE" = "Second" ];then
+                                        	if [ `cat /dev/shm/cluster_info|grep "Number of Peers"|awk -F: '{print $2}'` -ne 0 ];then
+                                                	TRAFFIC_PORT=`cat $UNI_DIR/config/nodeinfo|awk -F"=" '$1 == "TRAFFIC_PORT" {print $2}'`
+                                                	TRAFFIC_IP=`ifconfig $TRAFFIC_PORT|awk '/inet /{print $2}'`
+							if [ -n "$TRAFFIC_PORT" ];then 
+                                               			arping -s $TRAFFIC_IP -I $TRAFFIC_PORT $node -c 1
+							fi
+                                        	fi
+                                	fi
+				fi
+			done
+
+			currid=`ctdb status|grep Generation:|awk -F: '{print $2}'|sed 's/ //g'`
+			if [ -s /dev/shm/generationid -a -n "$currid" ];then
+				if [ -z "`cat /dev/shm/generationid|grep -w $currid`" ];then
+					systemctl restart ctdb 1>/dev/null 2>/dev/null
+					count_ctdb=0
+				fi
+			fi
+		fi
+	fi
+	
+
+	cnt=0
+        while [ 1 ]
+        do
+		cnt=$(($cnt+1))
+		if [ $cnt -gt 3 ];then
+			continue 2
+		fi
+		cluster_info=`cat $SHARED_DIR/tmp/cluster_info 2>/dev/null`
+        	HEAD=`echo "$cluster_info"|head -n 1`
+                END=`echo "$cluster_info"|tail -n 1`
+                if [ "$HEAD" = "HEAD_OF_RECORD" -a "$END" = "END_OF_RECORD!" ];then
+               		RANDOM_NUM=`echo "$cluster_info"|grep RANDOM_NUM|awk -F"=" '{print $2}'`
+                        if [ -n "$RANDOM_NUM" -a "$RANDOM_NUM" != "$F_RANDOM_NUM" ];then
+                               	break
+                        fi
+                	F_RANDOM_NUM=$RANDOM_NUM
+                else
+                        usleep 100000
+                fi
+        done
+
+
+	vols=`echo "$cluster_info"|egrep "Volume Name:|^Status:"|xargs|sed 's/Volume /\n/g'|sed '/^$/d'|awk '{print $2":"$4}'`
+        
+	#node online mount all vol
+        for var in `echo "$vols"`
+        do
+                vol=`echo $var|awk -F":" '{print $1}'`
+                stat=`echo $var|awk -F":" '{print $2}'`
+                if [ -z "`mount|grep "$HOSTNAME:$vol "`" -a "$stat" = "Started" -a "$vol" != "vol0" ];then
+                	mkdir -p  /unistorage/unistorage_$vol
+                       	nohup mount -t glusterfs $HOSTNAME:$vol $ROOT_DIR/unistorage_$vol 2>/dev/null
+                fi
+        done	
+
+        #umount not exist or io error vol
+        mount|grep "fuse.glusterfs"|while read line
+        do
+		vol=`echo $line|awk '{print $1}'|awk -F":" '{print $2}'`
+		mount_dir=`echo $line|awk '{print $3}'`
+		if [ -z "`echo "$vols"|awk -F":" '$1==var {print $1}' var=$vol`" ];then
+                        UmountDir $mount_dir
+                fi
+        done
+
+
+	#check the sharedir
+        mkdir  -p $SHARED_DIR/config 2>/dev/null
+
+	#check group_add
+
+	head -n 1 $SHARED_DIR/config/group_add_list 1>/dev/null 2>/dev/null
+	if [ -s $SHARED_DIR/config/group_add_list ];then
+        	cat $SHARED_DIR/config/group_add_list >/dev/shm/group_add_list
+	      	cat /etc/group >/dev/shm/group
+        	group_num=`cat /dev/shm/group|wc -l`
+        	if [ "$group_num" = "$p_group_num" ];then
+                	cat /dev/shm/group_add_list|while read list
+                	do
+                        	addgroup=`echo $list|awk '{print $1}'`
+                        	if [ -z "`cat /dev/shm/group|awk -F: '$1==group {print $1}' group=$addgroup`" ];then
+                                	$UNI_DIR/script/add_group_local $addgroup
+                        	fi
+                	done
+        	fi
+        	p_group_num=$group_num
+	fi
+
+	#check user_add
+	head -n 1 $SHARED_DIR/config/user_add_list 1>/dev/null 2>/dev/null
+	if [ -s $SHARED_DIR/config/user_add_list ];then
+        	pdbedit -L 2>/dev/null >/dev/shm/pdbedit.tmp
+        	cat $SHARED_DIR/config/user_add_list >/dev/shm/user_add_list
+		cat /etc/passwd >/dev/shm/passwd
+        	user_num=`cat /dev/shm/passwd|sed '/^ *$/d'|wc -l`
+        	if [ "$user_num" = "$p_user_num" ];then
+                	cat /dev/shm/user_add_list|while read line
+                	do 
+                        	user=`echo $line|awk '{print $1}'`
+                        	group=`echo $line|awk '{print $2}'`
+                        	passwd=`echo $line|awk '{print $3}'`
+                        	if [ -z "`cat /dev/shm/pdbedit.tmp|awk -F: '$1==user {print $1}' user=$user`" ];then 
+                                	$UNI_DIR/script/add_user $user $group $passwd 1>/dev/null 2>/dev/null
+                        	fi
+				if [ -z "`cat /dev/shm/passwd|awk -F: '$1==user {print $1}' user=$user`" ];then
+                                        $UNI_DIR/script/add_user_local $user $group 1>/dev/null 2>/dev/null
+                                fi
+                	done
+        	fi
+        	p_user_num=$user_num
+	fi
+
+	#check modify_user
+	head -n 1 $SHARED_DIR/config/user_modify_list 1>/dev/null 2>/dev/null
+	if [ -s $SHARED_DIR/config/user_modify_list ];then
+        	cat $SHARED_DIR/config/user_modify_list|while read line
+        	do
+                	user=`echo $line|awk '{print $1}'`
+                	nodelist=`echo $line|sed 's/.*%\(.*\)%/\1/'`
+                	if [ -n "$user"  -a -z "$nodelist" ];then
+                        	sed -i "/^$user /d" --follow-symlinks $SHARED_DIR/config/user_modify_list
+                	else
+                        	if [ -n "` echo $nodelist|sed 's/ /\n/g'|awk '$1==host {print $1}' host=$HOSTNAME`" ];then
+                                	group=`echo $line|awk '{print $2}'`
+                                	passwd=`echo $line|awk '{print $3}'`
+                                	UNI_DIR/script/modify_user_local $user $group
+                                	nodelistnew=`echo $nodelist|sed 's/ /\n/g'|awk '$1!=host {print $1}' host=$HOSTNAME`
+                                	sed -i "/^$user /d" --follow-symlinks $SHARED_DIR/config/user_modify_list
+                                	echo "$user $group %$nodelistnew%">>$SHARED_DIR/config/user_modify_list
+                        	fi
+                	fi
+        	done
+	fi
+
+	#check other command missing
+	head -n 1 $SHARED_DIR/config/missing_command_list 1>/dev/null 2>/dev/null
+	if [ -s $SHARED_DIR/config/missing_command_list ];then
+        	cat $SHARED_DIR/config/missing_command_list|while read line
+        	do
+                	CMD=`echo $line|awk '{print $1}'`
+                	OBJ=`echo $line|awk '{print $2}'`
+                	echo $OBJ|sed 's/\//\\\//g'>/tmp/path2
+                	conv_path=`cat /tmp/path2`
+                	PARMS=`echo $line|awk '{for(i=2;i<NF;i++) printf "%s ", $i}'`
+                	nodelist=`echo $line|sed 's/.*%\(.*\)%/\1/'`
+                	if [ -n "` echo $nodelist|sed 's/ /\n/g'|awk '$1==host {print $1}' host=$HOSTNAME`" ];then
+                        	$UNI_DIR/script/$CMD $PARMS
+                        	nodelistnew=`echo $nodelist|sed 's/ /\n/g'|awk '$1!=host {print $1}' host=$HOSTNAME`
+                        	sed -i "/$CMD[ ]*$conv_path /d" --follow-symlinks $SHARED_DIR/config/missing_command_list
+                        	echo "$CMD $PARMS %$nodelistnew%">>$SHARED_DIR/config/missing_command_list
+                	fi
+                	if [ -z "$nodelist" ];then
+                        	sed -i "/^$CMD[ ]*$conv_path /d" --follow-symlinks $SHARED_DIR/config/missing_command_list
+                	fi
+        	done
+	fi
+
+	#check version
+	if [ -s /tmp/uni_version -a -s $SHARED_DIR/cloud_version ];then
+        	CURRENT_VER=`cat /tmp/uni_version|awk '{print $2}'`
+        	GLUSTER_VER=`cat $SHARED_DIR/cloud_version`
+                	if [ `echo "$CURRENT_VER < $GLUSTER_VER"|bc` -ne 0 -a ! -f /tmp/.update_tmp ];then
+                        	$UNI_DIR/script/uni_update
+                	fi
+	fi
+
+## backup fstab
+	if [ -s /etc/fstab ];then
+		echo y|cp -rf /etc/fstab $UNI_DIR/tmp/fstab.bak 1>/dev/null 2>/dev/null
+	fi
+	
+	sleep $time
+done
