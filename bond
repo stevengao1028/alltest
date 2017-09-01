@@ -1,0 +1,31 @@
+#!/usr/bin/python
+#-*- coding:utf8 -*-
+import os,re
+path = "/etc/sysconfig/network-scripts/"
+bond_port =""
+bond_port_list = []
+port_list = os.listdir('/sys/class/net')
+port_file = os.listdir(path)
+slave="SLAVE=yes"
+def get_list():
+    # print port_list
+    global bond_port
+    for port in port_list:
+        if re.search("^bond[0-9]",port):
+            # print port
+            for e in port_file:
+               if os.path.isfile(path+e) :
+                  f = open(path+e,'r')
+                  if   slave in f.read() :
+                      f.seek(0)
+                      # print f.tell()
+                      if port in f.read():
+                        bond_port=bond_port + e+","
+                      # print bond_port
+                  f.close()
+            bond_port=port+" "+bond_port.rstrip(",")
+            bond_port_list.append(bond_port)
+            bond_port=""
+    # print bond_port_list
+    return bond_port_list
+print get_list()
