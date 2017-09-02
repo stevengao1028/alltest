@@ -4,12 +4,16 @@ import os,re
 path = "/etc/sysconfig/network-scripts/"
 bond_port =""
 bond_port_list = []
-port_list = os.listdir('/sys/class/net')
 port_file = os.listdir(path)
 slave="SLAVE=yes"
-def get_list():
+def get_list(name):
     # print port_list
     global bond_port
+    if name :
+        port_list=[name]
+    else:
+        port_list = os.listdir('/sys/class/net')
+    # print port_list
     for port in port_list:
         if re.search("^bond[0-9]",port):
             # print port
@@ -20,12 +24,11 @@ def get_list():
                       f.seek(0)
                       # print f.tell()
                       if port in f.read():
-                        bond_port=bond_port + e+","
-                      # print bond_port
+                        bond_port=bond_port+e+","
                   f.close()
             bond_port=port+" "+bond_port.rstrip(",")
             bond_port_list.append(bond_port)
             bond_port=""
     # print bond_port_list
     return bond_port_list
-print get_list()
+print get_list("bond0")
