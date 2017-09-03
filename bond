@@ -2,12 +2,12 @@
 #-*- coding:utf8 -*-
 import os,re
 path = "/etc/sysconfig/network-scripts/"
-bond_port =""
-bond_port_list = []
-port_file = os.listdir(path)
-slave="SLAVE=yes"
-def get_list(name):
+bond_port = ""
+def get_bond(name):
     # print port_list
+    port_file = os.listdir(path)
+    slave = "SLAVE=yes"
+    bond_port_list = []
     global bond_port
     if name :
         port_list=[name]
@@ -19,16 +19,43 @@ def get_list(name):
             # print port
             for e in port_file:
                if os.path.isfile(path+e) :
-                  f = open(path+e,'r')
-                  if   slave in f.read() :
-                      f.seek(0)
-                      # print f.tell()
-                      if port in f.read():
-                        bond_port=bond_port+e+","
-                  f.close()
-            bond_port=port+" "+bond_port.rstrip(",")
-            bond_port_list.append(bond_port)
-            bond_port=""
+                  try:
+                      f = open(path+e,'r')
+                      if  slave in f.read() :
+                          f.seek(0)
+                          # print f.tell()
+                          if port in f.read():
+                            bond_port=bond_port+e[6:]+","
+                  except:
+                      return "File of ports read error"
+                  finally:
+                      f.close()
+            if bond_port.rstrip(",") <> "":
+                bond_port=port+" "+bond_port.rstrip(",")
+                bond_port_list.append(bond_port)
+                bond_port=""
     # print bond_port_list
     return bond_port_list
-print get_list("bond0")
+print get_bond("bond")
+
+
+def del_bond(name):
+    # print name
+    ports = get_bond(name)
+    # print ports
+    if name and len(ports) == 1:
+        # print ports
+        bond_file=path+"ifcfg-"+ "".join(ports).split(" ", 1)[0]
+        # print bond_file
+        try:
+            os.remove(bond_file)
+        except OSError  :
+            return "Bond_file is not exist"
+            # os.rename('path,"ifg-","".join(ports).split(" ",1)[0]','path,ifcfg-bond11')
+        for port in "".join(ports).split(" ",1)[1].split(","):
+            print port
+        return "SUCESSFUL"
+    else:
+        # print "not"
+        return "bond can`t be null or isn`t exist"
+print del_bond("bond1")
