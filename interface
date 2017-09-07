@@ -4,7 +4,10 @@ import os,re
 path = "/etc/sysconfig/network-scripts/"
 
 def interface(device,bootproto,ipaddr,netmask,gateway):
-    if device and bootproto and ipaddr and netmask and gateway <> "":
+    if (device == "" or bootproto == "" or
+        ipaddr  == "" or netmask == "" or gateway == ""):
+        return "not correct parameters "
+    else:
          ipconfiglines=[]
          config_file=path+"ifcfg-"+device
          ipconfiglines.append('DEVICE=' + device+'\n')
@@ -22,10 +25,11 @@ def interface(device,bootproto,ipaddr,netmask,gateway):
                  f_w.writelines(ipconfiglines)
                  for line in lines:
                     if not re.search(pattern,line):
-                       print line
+                       # print line
                        f_w.write(line)
-             os.popen('systemctl network restart')
+             os.popen('systemctl restart network')
+             return "Secessful"
          except  :
              return "file is not exist"
     # return  "ok"
-interface("ens37","none","192.168.1.38","255.255.255.0","192.168.1.1")
+print interface("eno16777736","none","192.168.1.30","255.255.255.0","192.168.1.1")
