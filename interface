@@ -1,0 +1,20 @@
+def interface(device,bootproto,ipaddr,netmask,gateway):
+    if device and bootproto and ipaddr and netmask and gateway <> "":
+         ipconfiglines=[]
+         config_file=path+"ifcfg-"+device
+         ipconfiglines[1] = 'DEVICE=' + device+'\n'
+         ipconfiglines[3] = 'ONBOOT=yes' + '\n'
+         ipconfiglines[4] = 'BOOTPROTO='+bootproto + '\n'
+         ipconfiglines[5] = 'IPADDR=' + ipaddr + '\n'
+         ipconfiglines[6] = 'NETMASK=' +netmask + '\n'
+         ipconfiglines[7] = 'GATEWAY='+gateway + '\n'
+         with open(config_file, "w") as f_w:
+             lines = f_w.readlines()
+             for line in lines:
+                 if "DEVICE" or "ONBOOT" or "BOOTPROTO" or "IPADDR" or "NETMASK" or "GATEWAY" not in line:
+                     f_w.write(line)
+             f_w.write(ipconfiglines)
+
+
+     return
+print interface()
