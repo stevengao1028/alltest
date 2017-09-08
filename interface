@@ -27,7 +27,6 @@ def interface(device,bootproto,ipaddr,netmask,gateway):
                     if not re.search(pattern,line):
                        # print line
                        f_w.write(line)
-             os.popen('systemctl restart network')
              return "Secessful"
          except  :
              return "file is not exist"
