@@ -37,28 +37,7 @@ def get_bond(name):
                 bond_port=""
     # print bond_port_list
     return bond_port_list
-# print get_bond("bond")
-
-def del_bond(name):
-    ports = get_bond(name)
-    if name and len(ports) == 1:
-        bond_name = "".join(ports).split(" ", 1)[0]
-        bond_ports = "".join(ports).split(" ", 1)[1].split(",")
-        bond_file=path+"ifcfg-"+ bond_name
-        bond_mode_file="/etc/modprobe.d/bond.conf"
-        bonding_master="/sys/class/net/bonding_masters"
-        os.popen('sed -i "/'+name+ ' /d" '+bond_mode_file )
-        os.popen('rm -rf '+bond_file)
-        os.popen('echo -"'+bond_name+ '" >'+bonding_master+' 2>/dev/null')
-        for port in bond_ports:
-            config_file = path + "ifcfg-" + port
-            os.popen('echo "DEVICE="'+port+ '>'+config_file)
-            os.popen('echo -e "ONBOOT=yes\nUSERCTL=no\nBOOTPROTO=none\nTYPE=Ethernet" >>' + config_file)
-        return "SUCESSFUL"
-    else:
-        # print "not"
-        return "bond can`t be null or isn`t exist"
-# print del_bond("bond1")
+#print get_bond("bond0")
 
 def del_bond(name):
     ports = get_bond(name)
@@ -128,9 +107,6 @@ def add_bond(name,mode,ports=[]):
     os.popen('echo '+mode+' >/sys/class/net/'+name+'/bonding/mode')
     os.popen('ifup ' + name)
 print add_bond("bond0","1",["eno33554984","eno50332208"])
-
-
-
 
 def cfg_port(device,bootproto,ipaddr,netmask,gateway):
     if (device == "" or bootproto == "" or
