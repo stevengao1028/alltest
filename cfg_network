@@ -60,14 +60,74 @@ def del_bond(name):
         return "bond can`t be null or isn`t exist"
 # print del_bond("bond1")
 
-def add_bond(name,type,ports):
-    r=os.popen('lsmod|grep bonding')
-    ports=os.listdir('/sys/class/net')
-    if name in ports:
+def del_bond(name):
+    ports = get_bond(name)
+    if name and len(ports) == 1:
+        bond_name = "".join(ports).split(" ", 1)[0]
+        bond_ports = "".join(ports).split(" ", 1)[1].split(",")
+        bond_file=path+"ifcfg-"+ bond_name
+        bond_mode_file="/etc/modprobe.d/bond.conf"
+        bonding_master="/sys/class/net/bonding_masters"
+        os.popen('sed -i "/'+name+ ' /d" '+bond_mode_file )
+        os.popen('rm -rf '+bond_file)
+        os.popen('echo -"'+bond_name+ '" >'+bonding_master+' 2>/dev/null')
+        for port in bond_ports:
+            config_file = path + "ifcfg-" + port
+            os.popen('echo "DEVICE="'+port+ '>'+config_file)
+            os.popen('echo -e "ONBOOT=yes\nUSERCTL=no\nBOOTPROTO=none\nTYPE=Ethernet" >>' + config_file)
+        return "SUCESSFUL"
+    else:
+        # print "not"
+        return "bond can`t be null or isn`t exist"
+#print del_bond("bond0")
+
+def add_bond(name,mode,ports=[]):
+    port_list=os.listdir('/sys/class/net')
+    if name in port_list:
         return "The $DEVICE is already exist"
-    if not r.read():
+    (status, result)=commands.getstatusoutput('lsmod|grep bonding')
+    if status != 0:
         os.popen('modprobe bonding')
-print add_bond("bond1")
+    bond_file=path+"ifcfg-"+ name
+    bondconfiglines=[]
+    bondconfiglines.append('DEVICE=' + name+'\n')
+    bondconfiglines.append('ONBOOT=yes' +'\n')
+    bondconfiglines.append('USERCTL=no' +'\n')
+    bondconfiglines.append('TYPE=Ethernet' +'\n')
+    try:
+        with open(bond_file,'w') as f_w:
+            f_w.writelines(bondconfiglines)
+    except:
+        return "bond config fail"
+    for port in ports:
+        portconfiglines=[]
+        port_file=path+"ifcfg-"+ port
+        portconfiglines.append('DEVICE=' + port + '\n')
+        portconfiglines.append('BOOTPROTO=none' + '\n')
+        portconfiglines.append('ONBOOT=yes' + '\n')
+        portconfiglines.append('USERCTL=efno' + '\n')
+        portconfiglines.append('SLAVE=yes' + '\n')
+        portconfiglines.append('MASTER=' +name + '\n')
+        try:
+            with open(port_file,'w') as f_w:
+                f_w.writelines(portconfiglines)
+        except:
+                return "port config fail"
+    os.popen('ifconfig '+port + ' 0.0.0.0 1>/dev/null 2>/dev/null')
+    bond_mode_file="/etc/modprobe.d/bond.conf"
+    modeconfiglines=[]
+    modeconfiglines.append('alias ' + name +' bonding' + '\n')
+    modeconfiglines.append('options '+ name +' miimon=100 mode=' +mode + '\n')
+    try:
+        with open(bond_mode_file,'a+') as f_w:
+            f_w.writelines(modeconfiglines)
+    except:
+        return "mode file config fail"
+    os.popen('ifup '+name)
+    os.popen('ifdown '+name)
+    os.popen('echo '+mode+' >/sys/class/net/'+name+'/bonding/mode')
+    os.popen('ifup ' + name)
+print add_bond("bond0","1",["eno33554984","eno50332208"])
 
 
 
