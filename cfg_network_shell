@@ -80,7 +80,6 @@ def add_bond(name,mode,ports=[]):
     os.popen('ifup ' + name)
 print add_bond("bond0","1",["eno33554984","eno50332208"])
 
-import os
 def cfg_port(device,bootproto,ipaddr,netmask,gateway):
     if (device == "" or bootproto == "" or
         ipaddr  == "" or netmask == "" or gateway == ""):
