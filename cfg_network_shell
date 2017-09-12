@@ -1,0 +1,125 @@
+#!/usr/bin/python
+#-*- coding:utf8 -*-
+import os,re,commands
+path = "/etc/sysconfig/network-scripts/"
+bond_port = ""
+
+def get_bond(name):
+    # print port_list
+    port_file = os.listdir(path)
+    slave = "SLAVE=yes"
+    bond_port_list = []
+    global bond_port
+    if name :
+        port_list=[name]
+    else:
+        port_list = os.listdir('/sys/class/net')
+    # print port_list
+    for port in port_list:
+        if re.search("^bond[0-9]",port):
+            # print port
+            for e in port_file:
+               if os.path.isfile(path+e) :
+                  try:
+                      f = open(path+e,'r')
+                      if  slave in f.read() :
+                          f.seek(0)
+                          # print f.tell()
+                          if port in f.read():
+                            bond_port=bond_port+e[6:]+","
+                  except:
+                      return "File of ports read error"
+                  finally:
+                      f.close()
+            if bond_port.rstrip(",") <> "":
+                bond_port=port+" "+bond_port.rstrip(",")
+                bond_port_list.append(bond_port)
+                bond_port=""
+    # print bond_port_list
+    return bond_port_list
+#print get_bond("bond0")
+
+def del_bond(name):
+    ports = get_bond(name)
+    if name and len(ports) == 1:
+        bond_name = "".join(ports).split(" ", 1)[0]
+        bond_ports = "".join(ports).split(" ", 1)[1].split(",")
+        bond_file=path+"ifcfg-"+ bond_name
+        bond_mode_file="/etc/modprobe.d/bond.conf"
+        bonding_master="/sys/class/net/bonding_masters"
+        os.popen('sed -i "/'+name+ ' /d" '+bond_mode_file )
+        os.popen('rm -rf '+bond_file)
+        os.popen('echo -"'+bond_name+ '" >'+bonding_master+' 2>/dev/null')
+        for port in bond_ports:
+            config_file = path + "ifcfg-" + port
+            os.popen('echo -e "DEVICE="'+port+'"\nONBOOT=yes\nUSERCTL=no\nBOOTPROTO=none\nTYPE=Ethernet" >' + config_file)
+        return "SUCESSFUL"
+    else:
+        # print "not"
+        return "bond can`t be null or isn`t exist"
+#print del_bond("bond0")
+
+def add_bond(name,mode,ports=[]):
+    port_list=os.listdir('/sys/class/net')
+    if name in port_list:
+        return "The $DEVICE is already exist"
+    (status, result)=commands.getstatusoutput('lsmod|grep bonding')
+    if status != 0:
+        os.popen('modprobe bonding')
+    bond_file=path+"ifcfg-"+ name
+    os.popen('echo -e "DEVICE="' + name + '"\nONBOOT=yes\nUSERCTL=no\nTYPE=Ethernet" >' + bond_file)
+    for port in ports:
+        port_file=path+"ifcfg-"+ port
+        os.popen('echo -e "DEVICE="' + port + '"\nBOOTPROTO=none\nONBOOT=yes\nUSERCTL=no\nSLAVE=yes\nMASTER="'+name+' >' + port_file)
+    os.popen('ifconfig '+port + ' 0.0.0.0 1>/dev/null 2>/dev/null')
+    bond_mode_file="/etc/modprobe.d/bond.conf"
+    os.popen('echo -e "alias "' + name + '" bonding\noptions "'+name+'" miimon=100 mode="' + mode +' >>' + bond_mode_file)
+    os.popen('ifup '+name)
+    os.popen('ifdown '+name)
+    os.popen('echo '+mode+' >/sys/class/net/'+name+'/bonding/mode')
+    os.popen('ifup ' + name)
+print add_bond("bond0","1",["eno33554984","eno50332208"])
+
+import os
+def cfg_port(device,bootproto,ipaddr,netmask,gateway):
+    if (device == "" or bootproto == "" or
+        ipaddr  == "" or netmask == "" or gateway == ""):
+        return "not correct parameters "
+    else:
+        config_file = "/tmp/ifcfg-" + device
+        #shell
+        os.popen('sed -i -e "/DEVICE/cDEVICE="' + device + " " +
+                 '-e "/ONBOOT/cONBOOT=yes"' + " " +
+                 '-e "/BOOTPROTO/cBOOTPROTO="' + bootproto + " " +
+                 '-e "/IPADDR/cIPADDR="' + ipaddr + " " +
+                 '-e "/NETMASK/cNETMASK="' + netmask + " " +
+                 '-e "/GATEWAY/cGATEWAY="' + gateway + " " + config_file)
+         #python
+         # ipconfiglines=[]
+         # ipconfiglines.append('DEVICE=' + device+'\n')
+         # ipconfiglines.append('ONBOOT=yes'+'\n')
+         # ipconfiglines.append('BOOTPROTO='+bootproto+'\n')
+         # ipconfiglines.append('IPADDR=' + ipaddr+'\n')
+         # ipconfiglines.append('NETMASK=' +netmask+'\n')
+         # ipconfiglines.append('GATEWAY='+gateway+'\n')
+         # # print ipconfiglines
+         # pattern = re.compile('DEVICE|ONBOOT|BOOTPROTO|IPADDR|NETMASK|GATEWAY')
+         # try:
+         #     with open(config_file,'r') as f:
+         #        lines = f.readlines()
+         #     with open(config_file,'w') as f_w:
+         #         f_w.writelines(ipconfiglines)
+         #         for line in lines:
+         #            if not re.search(pattern,line):
+         #               # print line
+         #               f_w.write(line)
+             # os.popen('systemctl restart network')
+         #    return "Secessful"
+         #except  :
+         #    return "file is not exist"
+    # return  "ok"
+print cfg_port("eno16777736","none","192.168.1.30","255.255.255.0","192.168.1.1")
+
+
+def restart_network():
+    os.popen('systemctl restart network')
