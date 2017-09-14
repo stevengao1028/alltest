@@ -87,12 +87,12 @@ def cfg_port(device,bootproto,ipaddr,netmask,gateway):
     else:
         config_file = "/tmp/ifcfg-" + device
         #shell
-        os.popen('sed -i -e "/DEVICE/cDEVICE="' + device + " " +
-                 '-e "/ONBOOT/cONBOOT=yes"' + " " +
-                 '-e "/BOOTPROTO/cBOOTPROTO="' + bootproto + " " +
-                 '-e "/IPADDR/cIPADDR="' + ipaddr + " " +
-                 '-e "/NETMASK/cNETMASK="' + netmask + " " +
-                 '-e "/GATEWAY/cGATEWAY="' + gateway + " " + config_file)
+        os.popen('sed -i -e "/DEVICE/d" -e "/ONBOOT/d" '
+                 '-e "/BOOTPROTO/d" -e "/IPADDR/d" '
+                 '-e "/NETMASK/d" -e "/GATEWAY/d" '+config_file)
+        os.popen('sed -i -e "1iDEVICE="' +device +' -e "1iONBOOT=yes"'+
+                 ' -e "1iBOOTPROTO="'+bootproto+' -e "1iIPADDR="'+ipaddr+
+                 ' -e "1iNETMASK="'+netmask+' -e "1iGATEWAY="'+gateway+" "+config_file)
          #python
          # ipconfiglines=[]
          # ipconfiglines.append('DEVICE=' + device+'\n')
