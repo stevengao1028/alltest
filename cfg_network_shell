@@ -85,7 +85,7 @@ def cfg_port(device,bootproto,ipaddr,netmask,gateway):
         ipaddr  == "" or netmask == "" or gateway == ""):
         return "not correct parameters "
     else:
-        config_file = "/tmp/ifcfg-" + device
+        config_file = =path+"ifcfg-"+ device
         #shell
         os.popen('sed -i -e "/DEVICE/d" -e "/ONBOOT/d" '
                  '-e "/BOOTPROTO/d" -e "/IPADDR/d" '
