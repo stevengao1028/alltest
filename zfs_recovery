@@ -1,0 +1,10 @@
+#!/bin/bash
+export LANG=en_US-UTF8
+ZFS_DIR=$(cd "$(dirname "$0")";cd ..;pwd)
+HOSTNAME=`hostname`
+
+while [ 1 ]
+do
+    zpool status |awk  -F" " '/pool:/{name="";offsd="";onspare="";spare="";result=1;name=$2}$1~/^sd/{if ($2=="OFFLINE"||$2=="UNAVAIL"){offsd=$1}}$1~/^spare-[0-9]/{getline;onspare=onspare"+"$1;getline;onspare=onspare"+"$1"#"}/AVAIL/{if ($2=="AVAIL" && $3==""){spare=$1}}$1~/^errors:/{if (offsd !=""&& spare !=""){result=system("zpool replace "name" "offsd" "spare" &>/dev/null")}}'
+    sleep 30
+done
