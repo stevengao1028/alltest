@@ -58,7 +58,7 @@ def profit_data_todb(address,year,quater):
             tag = tag +1
         else:
             tag = 0
-            print stock_code,stock_name, roe,netprofitmargin,profitmargin,netprofit,eps,income,mips,year,quater
+            # print stock_code,stock_name, roe,netprofitmargin,profitmargin,netprofit,eps,income,mips,year,quater
             try:
                 profit_info = (stock_code,stock_name,roe,netprofitmargin,profitmargin,netprofit,eps,income,mips,year,quater)
                 cursor.execute(sql, profit_info)
@@ -68,10 +68,6 @@ def profit_data_todb(address,year,quater):
                 return "fault"
     return  "sucess"
 
-
-# address = 'http://vip.stock.finance.sina.com.cn/q/go.php/vFinanceAnalyze/kind/profit' \
-#                    '/index.phtml?s_i=&s_a=&s_c=&reportdate=2013&quarter=4&p=1'
-# result = profit_data_todb(address,'2013','4')
 
 
 start_year = 1990
