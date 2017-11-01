@@ -10,7 +10,7 @@ cursor = conn.cursor()
 conn.text_factory = str
 try:
     cursor.execute(
-        'create table announcement (stock_code varchar(20) , stock_name varchar(20), type varchar(20),'
+        'create table IF NOT EXISTS announcement (stock_code varchar(20) , stock_name varchar(20), type varchar(20),'
         ' report_date varchar(20), report_quater varchar(20), report_context varchar(20), quater_last varchar(20),'
         'increase varchar(20),year varchar(20),quarter varchar(20))')
 except:
@@ -39,7 +39,6 @@ def announce_data_todb(address,year,quater):
     stock_code,stock_name,type,report_date,report_quater,report_context,quater_last,increase = "","","","","","","",""
     for line in lines:
         line_text = re.sub(r'<td style=.*">|<span.*>|<a href=.*">|</a>|</span>|</td>|<td>|<td><a href=.*>', '', line)
-        print line_text
         if  re.match(code_pattern, line_text):
             stock_code = line_text
         elif tag == 1:
@@ -58,7 +57,7 @@ def announce_data_todb(address,year,quater):
             increase = line_text
         else :
             pass
-        if tag < 7:
+        if tag < 8:
             tag = tag +1
         else:
             tag = 0
@@ -71,8 +70,6 @@ def announce_data_todb(address,year,quater):
                 conn.rollback()
                 return "fault"
     return  "sucess"
-
-
 
 
 now_time = datetime.datetime.now()
