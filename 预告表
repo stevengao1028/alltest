@@ -14,7 +14,7 @@ try:
         ' report_date varchar(20), report_quater varchar(20), report_context varchar(20), quater_last varchar(20),'
         'increase varchar(20),year varchar(20),quarter varchar(20))')
 except:
-    # print "db is exist"
+    print "db is exist"
     pass
 
 
@@ -22,24 +22,24 @@ def announce_data_todb(address,year,quater):
     url = address
     year = year
     quater = quater
-    sql = 'INSERT INTO announcement values (?,?,?,?,?,?,?,?,?,?,?)'
+    sql = 'INSERT INTO announcement values (?,?,?,?,?,?,?,?,?,?)'
     # try:
     response = requests.get(url)
-    # response.raise_for_status()
+    response.raise_for_status()
     # except requests.RequestException as e:
     #     return "error_url"+url
     response.encoding = response.apparent_encoding
     html = response.text
     # print html
-    lable_pattern = re.compile('<td(.*?)</td>')
+    lable_pattern = re.compile(r'<td.*</td>')
     lines= re.findall(lable_pattern,html)
-    print lines
+    # print lines
     code_pattern = re.compile(r'^\d{6}$')
     tag = 0
     stock_code,stock_name,type,report_date,report_quater,report_context,quater_last,increase = "","","","","","","",""
     for line in lines:
-        line_text = re.sub(r'<td.*>|<span.*>|<a href=.*>|</a>|</span>|</td>', '', line)
-        # print line_text
+        line_text = re.sub(r'<td style=.*">|<span.*>|<a href=.*">|</a>|</span>|</td>|<td>|<td><a href=.*>', '', line)
+        print line_text
         if  re.match(code_pattern, line_text):
             stock_code = line_text
         elif tag == 1:
@@ -64,8 +64,8 @@ def announce_data_todb(address,year,quater):
             tag = 0
             print stock_code,stock_name,type,report_date,report_quater,report_context,quater_last,increase,year,quater
             try:
-                profit_info = (stock_code,stock_name,type,report_date,report_quater,report_context,quater_last,increase,year,quater)
-                cursor.execute(sql, profit_info)
+                report_info = (stock_code,stock_name,type,report_date,report_quater,report_context,quater_last,increase,year,quater)
+                cursor.execute(sql, report_info)
                 conn.commit()
             except sqlite3.Error, e:
                 conn.rollback()
