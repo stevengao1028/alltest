@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-import urllib2
-import re
 import sqlite3
-import requests
 
 def create_table(db,table):
     db_name = db+".db"
@@ -60,8 +57,14 @@ def insert_data(db,table,page_data):
         conn.close()
         return result
 
-def search_data(db,table,):
-    
+def search_data(db,table, term):
+    db_name = db + ".db"
+    table_name = table
+    search_term = term
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    conn.text_factory = str
+    search_data_sql = ' SELECT * FROM '+db_name+' where '
     
     
     
