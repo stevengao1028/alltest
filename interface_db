@@ -1,0 +1,162 @@
+# -*- coding: utf-8 -*-
+import urllib2
+import re
+import sqlite3
+import requests
+
+def create_table(db,table):
+    db_name = db+".db"
+    table_name = table
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    conn.text_factory = str
+    create_table_sql = 'create table IF NOT EXISTS '+table_name+'  (year varchar(20),quarter varchar(20))'
+    try:
+        cursor.execute(create_table_sql)
+        result = "sucessful"
+    except:
+        result = table_name+" created fault"
+    finally:
+        conn.close()
+        return result
+
+def add_columes(db,table,columes):
+    db_name = db + ".db"
+    table_name = table
+    alert_colume = columes
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    conn.text_factory = str
+    result = ""
+    for each_colume in alert_colume:
+        add_columes_sql = 'ALTER  TABLE ' + table_name + ' ADD COLUMN  '+each_colume+' varchar(50)'
+        print add_columes_sql
+        try:
+            cursor.execute(add_columes_sql)
+            result = "sucessful"
+        except:
+            result = columes + ","
+    if result != "sucessful":
+        result = result.rstrip(',') + " add fault"
+    return result
+
+
+def insert_data(db,table,page_data):
+    db_name = db + ".db"
+    table_name = table
+    insert_data = page_data
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    conn.text_factory = str
+    insert_data_sql = 'INSERT INTO '+table_name+' VALUES '+insert_data
+    try:
+        cursor.execute(insert_data_sql)
+        conn.commit()
+        result = "sucessful"
+    except:
+        db.rollback()
+        result = "data insert fault"
+    finally:
+        conn.close()
+        return result
+
+def search_data(db,table,):
+    
+    
+    
+    
+    
+    
+    
+# a="1"
+# b="2"
+# 
+# data = (1,2),(2,1)
+# # print data
+# data = str(data)[1:-1]
+# # print type(data)
+# # print data
+# print insert_data("stock_info","test1",data)
+
+
+# # print create_table("stock_info","test1")
+# cols = ['b','c','d','e','f','g','gg']
+# print create_table("stock_info","test1")
+# print add_columes("stock_info","test1",cols)
+
+# def profit_todb(address,year,quater,db,table):
+#     url = address
+#     year = year
+#     quater = quater
+#     sql = 'INSERT INTO profit values (?,?,?,?,?,?,?,?,?,?,?)'
+#     # try:
+#     response = requests.get(url)
+#     # response.raise_for_status()
+#     # except requests.RequestException as e:
+#     #     return "error_url"+url
+#     response.encoding = response.apparent_encoding
+#     html = response.text
+#     lable_pattern = re.compile(r'<td.*</td>')
+#     lines= re.findall(lable_pattern,html)
+#     code_pattern = re.compile(r'^\d{6}$')
+#     tag = 0
+#     stock_code,stock_name,roe,netprofitmargin,profitmargin,netprofit,eps,income,mips = "","","","","","","","",""
+#     for line in lines:
+#         line_text = re.sub(r'<td>|</td>|<td.*_blank">|</a>|<td style=.*$|<a href=.*', '', line)
+#         # print line_text
+#         if  re.match(code_pattern, line_text):
+#             stock_code = line_text
+#         elif tag == 1:
+#             stock_name = line_text
+#         elif tag == 2:
+#             roe = line_text
+#         elif tag == 3:
+#             netprofitmargin = line_text
+#         elif tag == 4:
+#             profitmargin = line_text
+#         elif tag == 5:
+#             netprofit = line_text
+#         elif tag == 6:
+#             eps = line_text
+#         elif tag == 7:
+#             income = line_text
+#         elif tag == 8:
+#             mips = line_text
+#         else :
+#             pass
+#         if tag < 8:
+#             tag = tag +1
+#         else:
+#             tag = 0
+#             print stock_code,stock_name, roe,netprofitmargin,profitmargin,netprofit,eps,income,mips,year,quater
+#             try:
+#                 profit_info = (stock_code,stock_name,roe,netprofitmargin,profitmargin,netprofit,eps,income,mips,year,quater)
+#                 cursor.execute(sql, profit_info)
+#                 conn.commit()
+#             except sqlite3.Error, e:
+#                 conn.rollback()
+#                 return "fault"
+#     return  "sucess"
+
+
+
+# start_year = 2016
+# end_year = 2017
+# start_quarter = 1
+# end_quarter = 4
+# while start_year <= end_year:
+#     start_quarter = 1
+#     while start_quarter <= end_quarter:
+#         for page in range(1, 100):
+#             address = 'http://vip.stock.finance.sina.com.cn/q/go.php/vFinanceAnalyze/kind/profit/index.phtml?s_i=&s_a=&s_c=&reportdate='+str(start_year)+'&quarter='+str(start_quarter)+'&p='+str(page)
+#             print address
+#             # print "year:",start_year,"quarter:",start_quarter,"page:",page
+#             result = profit_data_todb(address,str(start_year),str(start_quarter))
+#             if result != "sucess":
+#                 print "fault"+address
+#         start_quarter = start_quarter + 1
+#     start_year = start_year + 1
+# conn.close()
+#
+# address='http://vip.stock.finance.sina.com.cn/q/go.php/vFinanceAnalyze/kind/profit/index.phtml?s_i=&s_a=&s_c=&reportdate=2011&quarter=1&p=14'
+# print profit_data_todb(address,'2011','1')
