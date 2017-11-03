@@ -11,10 +11,10 @@ def get_columes(address):
     table_title = lines[0][1].split('\n')
     # print type(table_title)
     colume_pattern = re.compile(r'<td(.*?)>|</td>|</a>|<a(.*?)>|(^\s*)|(\s*$)')
-    line_text =[]
-    for colume in table_title:
-        each_colume = re.sub(colume_pattern,'',colume)
+    colume =[]
+    for line in table_title:
+        each_colume = re.sub(colume_pattern,'',line)
         if each_colume:
-            line_text.append(each_colume.encode("UTF-8"))
-            print each_colume
-    print len(line_text)
+            colume.append(each_colume.encode("UTF-8"))
+    return colume
+
