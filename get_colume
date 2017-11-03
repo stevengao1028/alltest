@@ -1,0 +1,21 @@
+def get_columes(address):
+    url = address
+    response = requests.get(url)
+    response.raise_for_status()
+    response.encoding = response.apparent_encoding
+    html = response.text
+    print type(html)
+    lable_pattern = re.compile('<tr (.*?)">(.*?)</tr>', re.S)
+    lines = re.findall(lable_pattern, html)
+    b = 0
+    # print type(lines[0][1])
+    table_title = lines[0][1].split('\n')
+    # print type(table_title)
+    colume_pattern = re.compile(r'<td(.*?)>|</td>|</a>|<a(.*?)">')
+    b =0
+    for i in table_title:
+        line_text = re.sub(colume_pattern,'',i)
+        if line_text:
+            print line_text
+            b = b + 1
+    print b
