@@ -57,14 +57,26 @@ def insert_data(db,table,page_data):
         conn.close()
         return result
 
-def search_data(db,table, term):
+def search_data(db, table, term):
     db_name = db + ".db"
     table_name = table
     search_term = term
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
     conn.text_factory = str
-    search_data_sql = ' SELECT * FROM '+db_name+' where '
+    search_data_sql = ' SELECT * FROM ' + table_name + ' where '
+    for each_term in search_term:
+        search_data_sql = search_data_sql+each_term+search_term[each_term]+" and "
+    search_data_sql =search_data_sql[:-4]
+    print search_data_sql
+    try:
+        cursor.execute(search_data_sql)
+        result = cursor.fetchall()
+    except :
+        result = "no result or condition error"
+    finally:
+        conn.close()
+        return result
     
     
     
