@@ -28,11 +28,14 @@ def excute_1(table):
         while start_quarter <= end_quarter:
             for page in range(1, 100):
                 # print address
-                print table," year:", start_year, "quarter:", start_quarter, "page:", page
                 result = get_data(address, str(start_year), str(start_quarter), str(page))
-                # for i in result:
-                #     print i
-                insert_data(db_name, table, result)
+                if result:
+                    # print address
+                    print table, " year:", start_year, "quarter:", start_quarter, "page:", page
+                    insert_data(db_name, table, result)
+                else:
+                    print "no data",table , "   ",start_year,"     ", start_quarter,"     ", page
+                    break
             start_quarter = start_quarter + 1
         start_year = start_year + 1
 
@@ -42,10 +45,10 @@ if __name__ == "__main__":
     p1 = multiprocessing.Process(target = excute_1, args = ("profit",))
     p2 = multiprocessing.Process(target = excute_1, args = ("operation",))
     p3 = multiprocessing.Process(target = excute_1, args = ("grow",))
-    p4 = multiprocessing.Process(target = excute_1, args=("debtpaying",))
-    p5 = multiprocessing.Process(target=excute_1, args=("cashflow",))
-    p6 = multiprocessing.Process(target=excute_1, args=("main",))
-    p7 = multiprocessing.Process(target=excute_1, args=("performance",))
+    p4 = multiprocessing.Process(target = excute_1, args= ("debtpaying",))
+    p5 = multiprocessing.Process(target = excute_1, args= ("cashflow",))
+    p6 = multiprocessing.Process(target = excute_1, args= ("main",))
+    p7 = multiprocessing.Process(target = excute_1, args= ("performance",))
 
     p1.start()
     p2.start()
