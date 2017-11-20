@@ -1,0 +1,39 @@
+#!/usr/bin/python
+#-*- coding:utf8 -*-
+import os,re
+
+class bond():
+    def __init__(self,name,iplist):
+        self.name = name
+        self.iplist = iplist
+        self.__path__ = "/etc/sysconfig/network-scripts/"
+    def add_bond(self):
+        print  __name__ + self.iplist[1]
+    def del_bond(self):
+        print  __name__ +self.name
+    def query_bond(self):
+        path = self.__path__
+        port_file = os.listdir(path)
+        master = "MASTER="+self.name
+        print master
+        bond_port_list = []
+        port = self.name
+        for e in port_file:
+            if os.path.isfile(path + e):
+                try:
+                    f = open(path + e, 'r')
+                    if master in f.read():
+                        bond_port_list.append(e)
+                except:
+                    return "File of ports read error"
+                finally:
+                    f.close()
+        bond_detail = {"name":self.name,"list":bond_port_list}
+        return bond_detail
+    def modify(self):
+        print  __name__ +self.name
+
+bond_ip = ["192.168.0.3","192.168.0.4"]
+bond = bond("bond0",bond_ip)
+bond.add()
+print bond.query_bond()
