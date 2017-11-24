@@ -1,0 +1,39 @@
+# -*- coding: utf-8 -*-
+import redis
+import sqlite3
+import re
+
+class mem_data():
+    def __init__(self,host='localhost',db="FinanceAnalyze.db",table="profit"):
+        self.pool = redis.ConnectionPool(host=host, port=6379, db=0)
+        self.r = redis.StrictRedis(connection_pool=self.pool)
+        self.db_name = db
+        self.table = table
+        self.conn = sqlite3.connect(self.db_name)
+        self.cursor = self.conn.cursor()
+    def sqldata_to_mem(self):
+        excute_sql = 'select * from  ' + self.table + ' where year > 2012'
+        self.cursor.execute(excute_sql)
+        result = self.cursor.fetchall()
+        index = self.cursor.description
+        dic = {}
+        self.r.flushdb()
+        for i in range(len(result)):
+            for y in range(len(index)):
+                dic[index[y][0]] = result[i][y]
+            key = self.table+":"+result[i][2]+ ":"+result[i][0]+":"+result[i][1]
+            self.r.hmset(key, dic)
+        self.conn.close()
+
+    def get_redis_data(self):
+        search_result = []
+        keys = self.r.keys("profit:600*")
+        for key in keys:
+            result = self.r.hgetall(key)
+            search_result.append(result)
+        return search_result
+
+# a = mem_data()
+# a.sqldata_to_mem()
+# print a.get_redis_data()
+
