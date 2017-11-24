@@ -1,0 +1,36 @@
+# coding=utf-8
+from django.shortcuts import render
+from redis_internal_class import mem_data
+import json
+from django.core  import serializers
+from django.http import HttpResponse, HttpResponseRedirect
+from django.views.decorators.csrf import csrf_exempt
+
+
+def index(request):
+    return render(request,'machine/index.html')
+@csrf_exempt
+def searchmachine(request):
+         if request.method == "POST":
+             searchtext= request.POST['searchtext']
+             if searchtext == "":
+                  get_data_mem =mem_data()
+                  result= get_data_mem.get_redis_data()
+                  # print json.dumps(result)
+                  # server= serializers.serialize("json",result)
+                  # return  HttpResponse(json.dumps(result),content_type="application/json")
+                  return HttpResponse(json.dumps(result), content_type="application/json")
+             else:
+                 get_data_mem = mem_data()
+                 result = get_data_mem.get_redis_data()
+                 # print result
+                 # server = serializers.serialize("json", result)
+                 print json.dumps(result)
+                 return HttpResponse(json.dumps(result), content_type="application/json")
+
+
+#如果是Redis hash结果为字典，列表对象，直接json.dumps（）
+#如果是sql 结果 serializers.serialize("json",result)，序列化后，json.dumps()
+#前端ajax对应的如下：
+#如果console.log()打印的返回结果为字符串，需var data = eval('(' + machine + ')');
+#如果console.log()打印的返回结果为对象，直接使用对象属性
