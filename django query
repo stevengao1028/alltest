@@ -21,6 +21,7 @@ def searchmachine(request):
         if  sn == "":
             years = ["2017","2016","2015"]
             result = Profit.objects.filter(year__gt=2013)
+            # 一次方法可以多个字段条件，不可单一字段多次条件，单一字段多次条件，用多次方法，如.filter().filter().exclude()
             # Profit.objects.filter(year__gt=2013) 条件__gt 大于2013
             # Profit.objects.filter(year__lt=2013) 条件__lt 小于2013
             # Profit.objects.filter(year__in=[2013,2015,2016]) ,条件列表2013,2015，2016
