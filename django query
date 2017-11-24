@@ -1,0 +1,49 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.shortcuts import render
+from sql.models import *
+from django.shortcuts import render
+from django.db.models import Q
+import json
+from django.core  import serializers
+
+from django.http import HttpResponse, HttpResponseRedirect
+
+# Create your views here.
+def mm(request):
+    return render(request, 'machine/index.html')
+
+
+def searchmachine(request):
+    if request.method == "POST":
+        sn = request.POST['searchtext']
+        if  sn == "":
+            years = ["2017","2016","2015"]
+            result = Profit.objects.filter(year__gt=2013)
+            # Profit.objects.filter(year__gt=2013) 条件__gt 大于2013
+            # Profit.objects.filter(year__lt=2013) 条件__lt 小于2013
+            # Profit.objects.filter(year__in=[2013,2015,2016]) ,条件列表2013,2015，2016
+            # Profit.objects.filter(year__in=[2011,2013]) ,条件范围2011-2013
+            # Profit.objects.filter(year__contains='201'),条件包含201，类似sql like
+            # Profit.objects.filter(year__icontains='201'),条件包含201，不区分大小写
+            # Profit.objects.filter(year__startswith='201'),条件以201开头
+            # Profit.objects.filter(year__istartswith='201'),条件以201开头，不区分大小写
+            # Profit.objects.filter(year__endswith='201'),条件以201结束
+            # Profit.objects.filter(year__regex =r'^201'),正则以201开头
+            # Profit.objects.filter(year__iregex =r'^201'),正则以201开头，不区分大小写
+            # Profit.objects.filter(year__gt=datetime.date(2017, 2, 14)) ，大于2017-02-14
+            # 时间包括datetime.date，datetime.year,date.month,datetime.day,datetime.week_day,datetime.hour,datetime.minute,datetime.seconde
+            # Profit.objects.filter(year__isnull=True) ,条件是否是空
+            # Profit.objects.all().order_by('stockcode') 排序
+            # Profit.objects.get(stockcode='600016') 获取单个
+            # Profit.objects.all(stockcode='600016') 获取多个
+            # web address，https://www.cnblogs.com/rinka/p/django_make_queries_anout_built-in_lookups.html
+            server = serializers.serialize("json", result)
+            print server
+            return HttpResponse(json.dumps(server), content_type="application/json")
+        else:
+            result = Profit.objects.filter(stockcode="300144")
+            server = serializers.serialize("json", result)
+            print server
+            return HttpResponse(json.dumps(server), content_type="application/json")
