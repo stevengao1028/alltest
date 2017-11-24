@@ -1,0 +1,12 @@
+1,startproject name
+2,startapp name
+3,if exsit db ,setting.py db option ,inspectdb import to models,makemigrate,migrate ,to create colume of django manager part
+4,copy template file to template
+5,url
+6,views
+
+
+
+
+
+models query ,(filter,all,exclude),
