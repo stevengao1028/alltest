@@ -1,0 +1,108 @@
+1,基础数据抓取
+2,基础数据分析，包含人工参与部分
+3,日常数据抓取
+4,日常数据分析
+5,通知
+
+
+基础数据：sina
+日常数据：sina，网易等
+通知：邮件或短信
+
+
+筛选
+1，市盈率排名，分析基础数据，市场走势                   --每日抓取数据，
+2，市净率排名，分析基础数据，市场走势
+3，成长型基础数据，负债率，现金比率，市场走势
+4，稳定型基础数据，负债率，现金比率，市场走势
+5，现金与市值比率，基础数据，市场走势
+
+成长型基础数据，毛利率，净利率
+主营业务收入增长，净利润增长，财务费用占比小
+稳定型基础数据
+主营业务收入偏离幅度小于10%，净利润同步，财务费用占比小
+周期型基础数据（如期货，商品价格影响）
+主营业务收入周期型，净利润同步，财务费用占比小
+
+
+
+基础字符
+净利润			NetProfit
+同比			YearOfYear
+现金流量		CashFlow
+每股			PerShare
+净资产			NetAssets
+增长率			Growth
+
+
+performance
+stock_code
+stock_name
+year
+quarter
+id
+type
+Report_date
+Reporting_period
+summary
+eps_lastperiod
+increase
+detail
+
+profit
+stock_code
+stock_name
+year
+quarter
+id
+roe
+netmargin
+grossmargin
+netprofit
+eps
+revenue
+imcompershare
+
+
+operation
+stock_code
+stock_name
+year
+quarter
+id
+receivable_turnover_rate
+receivable_turnover_days
+Inventories_turnover_rate
+Inventories_turnover_days
+Current_assets_turnover_rate
+Current_assets_turnover_days
+
+
+main
+stock_code
+stock_name
+year
+quarter
+id
+eps
+eps_yearonyear
+Yield_NetAssets   净资产收益率
+CashFlow_PerShare 每股现金流量
+Net_Profit	  净利润
+YOY_Net_Profit    净利润同比
+Allocation_plan   分配方案
+Report_date       发布日期
+Detail 		  详细
+
+grow
+stock_code
+stock_name
+year
+quarter
+id
+growth_Revenue    主营业务收入增长率
+growth_Net_Profit 净利润增长率
+growth_NetAssets  净资产增长率
+growth_assets	  总资产增长率
+growth_EPS	  每股收益增长率
+growth_Equity     股东权益增长率
