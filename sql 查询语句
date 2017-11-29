@@ -1,0 +1,41 @@
+select distinct StockCode,stockname,year,quarter,ROE,NetMargin,GrossMargin,NetProfit,EPS,Revenue,IncomPerShare from profit where   cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2013 and quarter = 4 order by StockCode
+
+select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2013 and quarter = 4 order by StockCode
+
+select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2009 and quarter = 4 order by StockCode
+
+select  distinct * from profit where StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2009 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2010 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2011 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2012 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2013 and quarter = 4))))) and year >2008 and quarter =4 order by StockCode,year 
+
+
+
+
+select  distinct profit.StockCode,profit.StockName,profit.EPS,profit.GrossMargin,profit.IncomPerShare,profit.NetMargin,profit.NetProfit,profit.Quarter,profit.Revenue,profit.ROE,profit.year,profit.Quarter,debtpaying.DebtToAssetsRatio from profit join debtpaying on profit.StockCode=debtpaying.StockCode where profit.StockCode in  (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2009 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2010 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2011 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2012 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2013 and quarter = 4))))) 
+
+select  profit.StockCode,debtpaying.DebtToAssetsRatio from profit join debtpaying on profit.StockCode=debtpaying.StockCode where profit.year = 2013
+
+select  distinct * from profit where StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2009 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2010 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2011 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2012 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2013 and quarter = 4))))) and year >2008 and quarter =4 order by StockCode,year
+
+
+select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2009 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2010 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2011 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2012 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2013 and quarter = 4))))
+
+
+select * from debtpaying where stockcode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2009 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2010 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2011 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2012 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2013 and quarter = 4))))) and year =2016 and quarter =4 order by stockcode 
+
+select  distinct profit.StockCode,profit.StockName,profit.EPS,profit.GrossMargin,profit.IncomPerShare,profit.NetMargin,profit.NetProfit,profit.Quarter,profit.Revenue,profit.ROE,profit.year,profit.Quarter,debtpaying.DebtToAssetsRatio from profit join debtpaying on profit.StockCode =debtpaying.StockCode and profit.year =debtpaying.year and profit.Quarter=debtpaying.quarter where profit.stockcode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2009 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2010 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2011 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2012 and quarter = 4 and StockCode in (select distinct StockCode from profit where cast(NetMargin as int)>20 and cast(GrossMargin as int)>cast(NetMargin as int) and year =2013 and quarter = 4))))) and profit.year in (2009,2010,2011,2012) and profit.quarter =4 order by profit.stockcode
+
+select revenue from profit where quarter = 4 and stockcode =603023
+
+select stockcode ,COUNT(stockcode) as total from grow where cast(GrowthRevenue as int)>0 and cast(GrowthNetProfit as int)>0 and year >2013 and quarter = 4 group by stockcode 
+
+连续3年主营增长，净利润增长
+SELECT * FROM grow WHERE stockcode IN (SELECT stockcode FROM (SELECT *,COUNT(stockcode) AS total FROM grow WHERE CAST(GrowthRevenue AS int)>0 AND CAST(GrowthNetProfit AS int)>0 AND year >2013 AND quarter = 4 GROUP BY stockcode ) AS A WHERE total=3) AND year>2013 AND quarter=4 ORDER BY stockcode
+
+SELECT count(stockcode) as total,stockcode,stockname FROM profit WHERE CAST(NetMargin AS int)>20 AND CAST(GrossMargin AS int)>CAST(NetMargin AS int) and year >=2009 and quarter =4 GROUP BY stockcode
+
+
+
+连续净利率在20%以上表，
+select * from profit where stockcode in (select StockCode from (SELECT *,count(stockcode) as total FROM profit WHERE CAST(NetMargin AS int)>20 AND CAST(GrossMargin AS int)>CAST(NetMargin AS int) and year >=2009 and quarter =4 GROUP BY stockcode) as T1 where total =5) and year >2009 and quarter =4 ORDER BY stockcode
+
+连续净利率在20%以上表，
+select * from profit where stockcode in (SELECT stockcode as total FROM profit WHERE CAST(NetMargin AS int)>20 AND CAST(GrossMargin AS int)>CAST(NetMargin AS int) and year >=2009 and quarter =4 GROUP BY stockcode HAVING count(stockcode) >=5)  and year >=2009 and quarter =4 order by stockcode
