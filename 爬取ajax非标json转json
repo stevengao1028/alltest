@@ -5,7 +5,8 @@ import datetime
 import sqlite3
 import requests
 from bs4 import BeautifulSoup
-
+# import execjs
+import demjson
 
 def get_columes(address):
     url = address
@@ -34,21 +35,15 @@ def get_data(address):
     # print rslt
     # print(type(rslt[0]))
     return  rslt[0]
-def parse_js(expr):
-    """
-    解析非标准JSON的Javascript字符串，等同于json.loads(JSON str)
-    :param expr:非标准JSON的Javascript字符串
-    :return:Python字典
-    """
-    obj = eval(expr, type('Dummy', (dict,), dict(__getitem__=lambda s, n: n))())
-    # c= eval(expr)
-    print obj[0]
-    result = json.dumps(obj)
-    return result
+
 
 x = get_data("http://money.finance.sina.com.cn/quotes_service/api/jsonp_v2.php/IO.XSRV2.CallbackList['yl3d4qagkRhWInMj']/Market_Center.getHQNodeDataNew?page=1&num=50&sort=per_d&asc=0&node=hs_a")
 y = get_data("http://money.finance.sina.com.cn/quotes_service/api/jsonp_v2.php/IO.XSRV2.CallbackList['_y4HiBuMc6BZKJj9']/Market_Center.getHQNodeDataNew?page=1&num=50&sort=pb&asc=0&node=hs_a")
 
-print (parse_js(x))
-
-print (parse_js(y))
+# print x
+# print y
+a =(x+",").split("},")
+for i in range(len(a)-1):
+    a[i] = a[i]+"}"
+    c= demjson.decode(a[i])
+    print c["name"]
