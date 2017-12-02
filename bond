@@ -59,3 +59,5 @@ def del_bond(name):
         # print "not"
         return "bond can`t be null or isn`t exist"
 print del_bond("bond1")
+
+print
