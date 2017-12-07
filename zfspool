@@ -1,0 +1,115 @@
+#!/bin/bash
+export LANG=en_US-UTF8
+ACTION=`echo "$1" |awk -F"action:" '{print $2}'`
+POOLNAME=`echo "$2" |awk -F"poolname:" '{print $2}'`
+KIND=`echo "$3" |awk -F"raid_kind:" '{print $2}'`
+DISKS=`echo "$4" |awk -F"disks:" '{print $2}'`
+SAPRES=`echo "$5" |awk -F"spares:" '{print $2}'`
+UNI_DIR=$(cd "$(dirname "$0")";cd ..;pwd)
+TEMP_DIR=$UNI_DIR/tmp
+ROOT_DIR=/unistorage
+CURR_NODE=`hostname`
+ENTRY=$VOL_NAME
+PARMS=$*
+CMD=`basename $0`
+PID=$$
+. $UNI_DIR/script/uniwhale-function
+Logging INFO $CMD $PARMS
+
+#pre-check
+chkmod=`zpool status &>/dev/null || echo $?`
+if [ "$chkmod" = "1" ];then
+	modprobe zfs
+	if [ $? -ne 1  ];then
+		Result FAILED "mode load fialed"
+		exit 1
+	fi
+fi
+
+#convert letter of disks
+disklist=`echo $DISKS |sed 's/,/ /g'`
+spares=`echo $SPARES |sed 's/,/ /g'`
+
+
+#main
+case "$ACTION" in
+"add")
+	if [ -z "$POOLNAME" -o -z "$DISKS" -o -z "$KIND" ];then
+		Result FAILED "action: $ACTION ,Poolname,disks and raid_kind can not be null"
+		exit 1
+	fi
+	#convert letter of kinds
+	case "$KIND" in
+	"5")
+		raid="raidz1"
+		;;
+	"6")
+		raid="raidz2"
+		;;
+	"0")	
+		raid=""
+		;;
+	*)	
+		Result FAILED "level not been define"
+		exit 1
+	esac
+	exsit=`zpool status $POOLNAME 1>/dev/null 2>/dev/null`
+	if [ $? -eq 0 ];then
+		Result FAILED "Pool is exsit"
+		exit 1
+	fi
+	if [ -z "$SAPRES" ];then
+		log=`zpool create $POOLNAME $raid $disklist -f 2>&1`
+	else
+		log=`zpool create $POOLNAME $raid $disklist spare $SAPRES -f 2>&1`
+	fi
+	if [ $? -eq 0 ];then
+		Result SUCCESSFUL $log
+	else
+		Result FAILED $log
+	fi
+        ;;
+"del")
+	if [ -z "$POOLNAME" ];then
+		Result FAILED "action: $ACTION ,Poolname can not be null"
+		exit 1
+	fi
+	exsit=`zpool status $POOLNAME 1>/dev/null 2>/dev/null`
+	if [ $? -ne 0 ];then
+		Result FAILED "Pool is not exsit"
+		exit 1
+	fi
+	log=`zpool destroy $POOLNAME  2>&1`
+	if [ $? -eq 0 ];then
+		Result SUCCESSFUL $log
+	else
+		Result FAILED $log
+	fi
+        ;;
+"replace") 
+	if [ -z "$POOLNAME" -o -z "$DISKS"  ];then
+		Result FAILED "action: $ACTION ,Poolname or disks can not be null"
+		exit 1
+	fi
+	log=`zpool replace $POOLNAME $disklist -f 2>&1`
+	if [ $? -eq 0 ];then
+		Result SUCCESSFUL $log
+	else
+		Result FAILED $log
+	fi
+	;;
+"query")
+	poolinfo=`zpool status $POOLNAME 2>/dev/null|awk -F" " '$1~/^pool:/{name=$2}$1~/^sd/{rdisk["\"",$1,"\""]=$2}$1~/errors:/{printf "{\"name\":\""name"\",";for (i in rdisk){printf i":\""rdisk[i]"\","}{printf "},"}}END{print ""}'`
+	echo $poolinfo|sed 's/,}/}/g;s/,$//;s/^/[/;s/$/]/'
+	;;
+*)
+	Logging ERROR $CMD "The type $type can not be defined"
+        Result FAILED "The type $type can not be defined"
+	exit 1
+        ;;
+esac
+
+
+
+
+
