@@ -2,7 +2,7 @@
 # coding=utf-8
 import commands
 import json
-
+from remote_exe import *
 
 class zfs():
 	def __init__(self,ip="",pool_name="",raid="",disks="",spares="",old_disk="",new_disk=""):
@@ -15,22 +15,29 @@ class zfs():
 		self.new_disk=new_disk
 	#exe_command
 	def exe_command(self,exe_cmd):
-		(status,output)=commands.getstatusoutput(exe_cmd)
-		result={'status':str(status),'info':output}
-		result=json.dumps(result)
-		return result
+		if self.ip == "":
+			(status,output)=commands.getstatusoutput(exe_cmd)
+			result={'status':str(status),'info':output}
+			result=json.dumps(result)
+			return result
+		else:
+			username= ""
+			passwd=""
+			result=remote_exec(self.ip,username,passwd,exe_cmd)
+			return result
 
 
 	#pre-check system mod
 	def check_mod(self):
 		(status,output)=commands.getstatusoutput('zpool status')
 		if status != 0:
-				exe_cmd="modprobe zfs"
-				result=self.exe_command(exe_cmd)
-				return result
-		data={'status':str(status),'info':output}
-		result=json.dumps(data)
-		return result
+			exe_cmd="modprobe zfs"
+			result=self.exe_command(exe_cmd)
+			return result
+		else:
+			result={'status':str(status),'info':output}
+			result=json.dumps(result)
+			return result
 
 	#query_zpool
 	def zpool_query(self):
