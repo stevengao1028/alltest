@@ -25,7 +25,7 @@ def remote_sftp(ip,action,username,passwd,local_path,remote_path):
         elif action =="get":
             sftp.get(remote_path, local_path)
     except Exception, e:
-        result = {'status': "1", 'info': "exec fault"}
+        result = {'status': "1", 'info': "faild"}
     else:
         result = {'status': "0", 'info': "sucessful"}
     t.close()
