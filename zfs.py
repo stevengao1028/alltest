@@ -1,11 +1,10 @@
 #!/usr/bin/python
 # coding=utf-8
 import commands
-import json
 from remote_exe import *
 
 class zfs():
-	def __init__(self,ip="",pool_name="",raid="",disks="",spares="",old_disk="",new_disk=""):
+	def __init__(self,ip="",pool_name="",raid="",disks=[],spares=[],old_disk="",new_disk=""):
 		self.ip=ip
 		self.pool_name=pool_name
 		self.raid=raid
@@ -18,11 +17,10 @@ class zfs():
 		if self.ip == "":
 			(status,output)=commands.getstatusoutput(exe_cmd)
 			result={'status':str(status),'info':output}
-			result=json.dumps(result)
 			return result
 		else:
-			username= ""
-			passwd=""
+			username= "root"
+			passwd="std654321"
 			result=remote_exec(self.ip,username,passwd,exe_cmd)
 			return result
 
@@ -36,13 +34,12 @@ class zfs():
 			return result
 		else:
 			result={'status':str(status),'info':output}
-			result=json.dumps(result)
 			return result
 
 	#query_zpool
 	def zpool_query(self):
 		pool_name=self.pool_name
-		exe_cmd="""zpool status """+pool_name+"""  2>/dev/null|awk -F" " '$1~/^pool:/{name=$2}$1~/^sd/{rdisk["\\"",$1,"\\""]=$2}$1~/errors:/{printf "{\\"name\\":\\""name"\\",";for (i in rdisk){printf i":\\""rdisk[i]"\\","}{printf "},"}}END{print ""}'|sed 's/,}/}/g;s/,$//;s/^/[/;s/$/]/'"""
+		exe_cmd="zpool status "+pool_name+"""  2>/dev/null|awk -F" " '$1~/^pool:/{name=$2}$1~/^sd/{rdisk["\\"",$1,"\\""]=$2}$1~/errors:/{printf "{\\"name\\":\\""name"\\",";for (i in rdisk){printf i":\\""rdisk[i]"\\","}{printf "},"}}END{print ""}'|sed 's/,}/}/g;s/,$//;s/^/[/;s/$/]/'"""
 		result=self.exe_command(exe_cmd)
 		return result
 
@@ -54,31 +51,29 @@ class zfs():
 		spares=self.sapres
 		if pool_name == "":
 			result={'status':"1",'info':"pool name can`t be null"}
-			result=json.dumps(result)
 			return result
 		if raid == "5":
 			raid_level="raidz1"
-		if raid == "6":
+		elif raid == "6":
 			raid_level="raidz2"
-		if raid == "0":
+		elif raid == "0":
 			raid_level=""
-		if raid == "":
+		else :
 			result={'status':"1",'info':"raid level did not been define"}
-			result=json.dumps(result)
 			return result
 		query_result=self.zpool_query()
-		if query_result['status'] == 0:
+		if query_result['info'] != "[]":
 			result={'status':"1",'info':"pool is exsit"}
-			result=json.dumps(result)
 			return result
-		if disks :
-			exe_cmd="zpool create "+pool_name+' '+raid_level+' '+' '.join(disks)+' '+' '.join(spares)
+		elif disks :
+			if spares:
+				exe_cmd="zpool create "+pool_name+' '+raid_level+' '+' '.join(disks)+' spare '+' '.join(spares)
+			else:
+				exe_cmd = "zpool create " + pool_name + ' ' + raid_level + ' ' + ' '.join(disks)
 			result=self.exe_command(exe_cmd)
-			result=json.dumps(result)
 			return result
 		else:
 			result={'status':"1",'info':"disk can`t be null"}
-			result=json.dumps(result)
 			return result
 
 	#del_zpool
@@ -86,17 +81,14 @@ class zfs():
 		pool_name=self.pool_name
 		if pool_name == "":
 			result={'status':"1",'info':"pool name can`t be null"}
-			result=json.dumps(result)
 			return result
-		query_result=self.zpool_query(pool_name)
-		query_result=json.loads(query_result)
-		if query_result['status'] == "0":
+		query_result=self.zpool_query()
+		if query_result['info'] != "[]":
 			exe_cmd="zpool destroy "+pool_name
 			result=self.exe_command(exe_cmd)
 			return result
 		else:
 			result={'status':"1",'info':"pool isn`t exsit"}
-			result=json.dumps(result)
 			return result
 
 
@@ -104,15 +96,13 @@ class zfs():
 	def replace_disk(self,pool_name,old_disk,new_disk):
 		if pool_name == "" or old_disk == "" or new_disk == "":
 			result={'status':"1",'info':"pool name ,old disk or new disk can`t be null"}
-			result=json.dumps(result)
 			return result
 		query_result=self.zpool_query(pool_name)
-		if query_result['status'] == 0:
+		if query_result['info'] != "[]":
 			exe_cmd="zpool replace "+pool_name+' '+old_disk+' '+new_disk
 			result=self.exe_command(exe_cmd)
 			return result
 		else:
 			result={'status':"1",'info':"pool isn`t exsit"}
-			result=json.dumps(result)
 			return result
 
