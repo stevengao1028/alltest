@@ -15,15 +15,17 @@ def remote_exec(ip,username,passwd,exe_command):
     s.close()
     return result
 
-def remote_put(ip,username,passwd,local_path,remote_path):
+def remote_sftp(ip,action,username,passwd,local_path,remote_path):
     try:
         t = paramiko.Transport((ip, 22))
         t.connect(username=username, password=passwd)
         sftp = paramiko.SFTPClient.from_transport(t)
-        sftp.put(local_path, remote_path)
-        t.close()
+        if action =="put":
+            sftp.put(local_path, remote_path)
+        elif action =="get":
+            sftp.get(remote_path, local_path)
     except Exception, e:
-        result = {'status': "1", 'info': "push fault"}
+        result = {'status': "1", 'info': "exec fault"}
     else:
         result = {'status': "0", 'info': "sucessful"}
     t.close()
