@@ -17,7 +17,7 @@ def disk_info(ip="127.0.0.1",disk=""):
             disk_list.append(disk_info)
     #到raid中查询
     query_zfs = zpool_info(ip)
-    query_lvm = pvl_info(ip)
+    query_lvm = lvm_info(ip)
     for num in range(len(disk_list)):
         for pool in query_zfs:
             if disk_list[num]['name'] in pool['disks'] or disk_list[num]['name'] in pool['spares']:
@@ -64,7 +64,7 @@ def zpool_info(ip,pool_name=""):
     # exe_result=exe_command(self.ip,exe_cmd)
     return result
 
-def pvl_info(ip):
+def lvm_info(ip):
     exe_cmd = """pvs -o pv_name,vg_name,lv_name"""
     exe_result = exe_command(ip,exe_cmd)
     pvl = []

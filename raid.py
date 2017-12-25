@@ -125,7 +125,7 @@ class lvm():
         return result
 
     def vg_add(self):
-        query_result = pvl_info(self.ip)
+        query_result = lvm_info(self.ip)
         if self.vg_name and self.vg_disk:
             for pvl in query_result:
                 if self.vg_name == pvl['vg'] :
@@ -141,7 +141,7 @@ class lvm():
 
     def vg_remove(self):
         if self.vg_name:
-            query_result = pvl_info(self.ip)
+            query_result = lvm_info(self.ip)
             for pvl in query_result:
                 if self.vg_name == pvl['vg']:
                     exe_cmd = "vgremove  " + self.vg_name+" -f"
@@ -156,7 +156,7 @@ class lvm():
 
     def vg_extend(self):
         if self.vg_name  and self.new_disk:
-            query_result = pvl_info(self.ip)
+            query_result = lvm_info(self.ip)
             for pvl in query_result:
                 if self.vg_name == pvl['vg']:
                         exe_cmd = "vgextend  " + self.vg_name+" "+" ".join(self.new_disk)
@@ -170,7 +170,7 @@ class lvm():
             return result
 
     def lv_add(self):
-        query_result = pvl_info(self.ip)
+        query_result = lvm_info(self.ip)
         if self.lv_name and self.lv_size and self.vg_name:
             for pvl in query_result:
                 if self.lv_name == pvl['lv'] :
@@ -186,7 +186,7 @@ class lvm():
 
     def lv_remove(self):
         if self.lv_name:
-            query_result = pvl_info(self.ip)
+            query_result = lvm_info(self.ip)
             for pvl in query_result:
                 if self.lv_name == pvl['lv']:
                     lv_path="/dev/"+pvl['vg']+"/"+self.lv_name
@@ -202,7 +202,7 @@ class lvm():
 
     def lv_extend(self):
         if self.lv_name and self.ex_size:
-            query_result = pvl_info(self.ip)
+            query_result = lvm_info(self.ip)
             for pvl in query_result:
                 if self.lv_name == pvl['lv']:
                     lv_path = "/dev/" + pvl['vg'] + "/" + self.lv_name
