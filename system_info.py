@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # coding=utf-8
 from function import *
-from raid import *
 import re
 
 def disk_info(ip="127.0.0.1",disk=""):
