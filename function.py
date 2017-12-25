@@ -54,3 +54,4 @@ def disk_init(disk=""):
     (status, output) = commands.getstatusoutput(exe_cmd)
     result = {'status': str(status), 'info': output}
     return result
+
