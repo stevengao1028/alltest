@@ -156,6 +156,7 @@ class lvm():
                     if len(list.split()) == 2:
                         pv_info['vg'] = list.split()[1]
                     if len(list.split()) == 3:
+                        pv_info['vg'] = list.split()[1]
                         pv_info['lv'] = list.split()[2]
                     pvl.append(pv_info)
         result = pvl
@@ -186,10 +187,10 @@ class lvm():
                 if self.vg_name == pvl['vg'] :
                     result = {'status': "1", 'info': "vg group is exsit"}
                     return result
-                exe_cmd = "vgcreate  " + self.vg_name +" "+" ".join(self.disks)
-                exe_result = exe_command(self.ip, exe_cmd)
-                result = exe_result
-                return result
+            exe_cmd = "vgcreate  " + self.vg_name +" "+" ".join(self.disks)
+            exe_result = exe_command(self.ip, exe_cmd)
+            result = exe_result
+            return result
         else:
             result = {'status': "1", 'info': "vg name or disk can`t be null"}
             return result
@@ -199,7 +200,7 @@ class lvm():
             query_result = self.pvl_info()
             for pvl in query_result:
                 if self.vg_name == pvl['vg']:
-                    exe_cmd = "vgremove  " + self.vg_name
+                    exe_cmd = "echo y|vgremove  " + self.vg_name
                     exe_result = exe_command(self.ip, exe_cmd)
                     result = exe_result
                     return result
@@ -214,7 +215,7 @@ class lvm():
             query_result = self.pvl_info()
             for pvl in query_result:
                 if self.vg_name == pvl['vg']:
-                        exe_cmd = "vgextend  " + self.vg_name+" ".join(self.new_disk)
+                        exe_cmd = "vgextend  " + self.vg_name+" "+" ".join(self.new_disk)
                         exe_result = exe_command(self.ip, exe_cmd)
                         result = exe_result
                         return result
@@ -231,10 +232,10 @@ class lvm():
                 if self.lv_name == pvl['lv'] :
                     result = {'status': "1", 'info': "lv volume is exsit"}
                     return result
-                exe_cmd = "lvcreate  -L " +self.lv_size+" -n "+self.lv_name +" "+self.vg_name
-                exe_result = exe_command(self.ip, exe_cmd)
-                result = exe_result
-                return result
+            exe_cmd = "lvcreate  -L " +self.lv_size+" -n "+self.lv_name +" "+self.vg_name
+            exe_result = exe_command(self.ip, exe_cmd)
+            result = exe_result
+            return result
         else:
             result = {'status': "1", 'info': "lv volume lv size or vg name can`t be null"}
             return result
