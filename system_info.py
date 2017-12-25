@@ -31,7 +31,7 @@ def disk_info(ip="127.0.0.1",disk=""):
     return result
 
 #query_zpool
-def zpool_info(ip,pool_name=""):
+def zpool_info(ip="127.0.0.1",pool_name=""):
     exe_cmd = "zpool status "+pool_name
     exe_result = exe_command(ip,exe_cmd)
     pool_list =[]
@@ -64,7 +64,7 @@ def zpool_info(ip,pool_name=""):
     # exe_result=exe_command(self.ip,exe_cmd)
     return result
 
-def lvm_info(ip):
+def lvm_info(ip="127.0.0.1"):
     exe_cmd = """pvs -o pv_name,vg_name,lv_name"""
     exe_result = exe_command(ip,exe_cmd)
     pvl = []
