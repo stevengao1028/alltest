@@ -4,7 +4,7 @@ from function import *
 from system_info import *
 
 class zfs():
-    def __init__(self,ip="127.0.0.1",pool_name="",raid="0",disks=[],spares=[],old_disk="",new_disk="",state=""):
+    def __init__(self,ip="127.0.0.1",pool_name="",raid="0",disks=[],spares=[],old_disk="",new_disk=""):
         self.ip=ip
         self.pool_name=pool_name
         self.raid=raid
@@ -12,7 +12,6 @@ class zfs():
         self.sapres=spares
         self.old_disk=old_disk
         self.new_disk=new_disk
-        self.state=state
 
     #pre-check system mod
     def check_mod(self):
@@ -29,18 +28,14 @@ class zfs():
 
     #add_zpool
     def zpool_add(self):
-        pool_name=self.pool_name
-        raid=self.raid
-        disks=self.disks
-        spares=self.sapres
-        if pool_name == "":
+        if self.pool_name == "":
             result={'status':"1",'info':"pool name can`t be null"}
             return result
-        if raid == "5":
+        if self.raid == "5":
             raid_level="raidz1"
-        elif raid == "6":
+        elif self.raid == "6":
             raid_level="raidz2"
-        elif raid == "0":
+        elif self.raid == "0":
             raid_level=""
         else :
             result={'status':"1",'info':"raid level did not been define"}
@@ -49,11 +44,11 @@ class zfs():
         if query_result :
             result={'status':"1",'info':"pool is exsit"}
             return result
-        elif disks :
-            if spares:
-                exe_cmd="zpool create "+pool_name+' '+raid_level+' '+' '.join(disks)+' spare '+' '.join(spares)+' -f'
+        elif self.disks :
+            if self.spares:
+                exe_cmd="zpool create "+self.pool_name+' '+raid_level+' '+' '.join(self.disks)+' spare '+' '.join(self.spares)+' -f'
             else:
-                exe_cmd = "zpool create " + pool_name + ' ' + raid_level + ' ' + ' '.join(disks)+' -f'
+                exe_cmd = "zpool create " +self.pool_name + ' ' + raid_level + ' ' + ' '.join(self.disks)+' -f'
             exe_result=exe_command(self.ip,exe_cmd)
             result=exe_result
             return result
@@ -92,7 +87,7 @@ class zfs():
             return result
 
 class lvm():
-    def __init__(self,ip="127.0.0.1",vg_name="",lv_name="",lv_size="",ex_size="",new_disk=[],vg_disk=[],pv_disk=[],state=""):
+    def __init__(self,ip="127.0.0.1",vg_name="",lv_name="",lv_size="",ex_size="",new_disk=[],vg_disk=[],pv_disk=[]):
         self.ip = ip
         self.vg_name = vg_name
         self.lv_name = lv_name
@@ -101,7 +96,6 @@ class lvm():
         self.new_disk = new_disk
         self.vg_disk = vg_disk
         self.pv_disk = pv_disk
-        self.state = state
 
     # def pv_query(self):
     #     exe_cmd="""pvs -o pv_name,pv_size,lv_name,lv_size,vg_size,vg_free,vg_name"""
