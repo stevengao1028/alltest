@@ -268,5 +268,5 @@ class lvm():
             result = {'status': "1", 'info': "lv volume  is not exsit "}
             return result
         else:
-            result = {'status': "1", 'info': "lv volume  or extend size can`t be null "}
+            result = {'status': "1", 'info': "lv volume  or extend size can`t be null"}
             return result
