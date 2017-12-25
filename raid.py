@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # coding=utf-8
 from function import *
-import re
+from system_info import *
 
 class zfs():
     def __init__(self,ip="127.0.0.1",pool_name="",raid="0",disks=[],spares=[],old_disk="",new_disk="",state=""):
@@ -26,40 +26,6 @@ class zfs():
             result={'status':str(status),'info':output}
             return result
 
-    #query_zpool
-    def zpool_query(self):
-        pool_name = self.pool_name
-        exe_cmd = "zpool status "+pool_name
-        exe_result = exe_command(self.ip,exe_cmd)
-        pool_list =[]
-        for pool in exe_result['info'].split('errors'):
-            pool_info = {'name':'','state':'','disks':'','spares':'','raid':'0'}
-            disks=[]
-            spares=[]
-            for line in pool.split('\n'):
-                if line and 'config' not in line and 'spares' not in line:
-                    item = line.lstrip(r'       ').split()[0]
-                    value = line.lstrip(r'      ').split()[1]
-                    if item =='pool:':
-                        pool_info['name'] = value
-                    if item =='state:':
-                        pool_info['state'] = value
-                    if item.startswith('sd') and value !="AVAIL":
-                        disks.append(item)
-                        pool_info['disks'] = disks
-                    if value =="AVAIL":
-                        spares.append(item)
-                        pool_info['spares'] = spares
-                    if  item.startswith('raidz1'):
-                        pool_info['raid'] = "5"
-                    if  item.startswith('raidz2'):
-                        pool_info['raid'] = "6"
-            if pool_info['name']:
-                pool_list.append(pool_info)
-        result = pool_list
-        # exe_cmd="zpool status "+pool_name+"""  2>/dev/null|awk -F" " '$1~/^pool:/{name=$2}$1~/^sd/{rdisk["\\"",$1,"\\""]=$2}$1~/errors:/{printf "{\\"name\\":\\""name"\\",";for (i in rdisk){printf i":\\""rdisk[i]"\\","}{printf "},"}}END{print ""}'|sed 's/,}/}/g;s/,$//;s/^/[/;s/$/]/'"""
-        # exe_result=exe_command(self.ip,exe_cmd)
-        return result
 
     #add_zpool
     def zpool_add(self):
@@ -79,7 +45,7 @@ class zfs():
         else :
             result={'status':"1",'info':"raid level did not been define"}
             return result
-        query_result=self.zpool_query()
+        query_result=zpool_info(self.ip)
         if query_result :
             result={'status':"1",'info':"pool is exsit"}
             return result
@@ -97,14 +63,13 @@ class zfs():
 
     #del_zpool
     def zpool_del(self):
-        pool_name=self.pool_name
-        if pool_name == "":
+        if self.pool_name == "":
             result={'status':"1",'info':"pool name can`t be null"}
             return result
-        query_result=self.zpool_query()
+        query_result=zpool_info(self.ip)
         if query_result :
-            exe_cmd="zpool destroy "+pool_name
-            exe_result = exe_command(self.ip, exe_cmd)
+            exe_cmd="zpool destroy "+self.pool_name
+            exe_result = exe_command(self.ip,exe_cmd)
             result = exe_result
             return result
         else:
@@ -113,15 +78,12 @@ class zfs():
 
     #replace
     def replace_disk(self):
-        pool_name=self.pool_name
-        old_disk=self.old_disk
-        new_disk=self.new_disk
-        if pool_name == "" or old_disk == "" or new_disk == "":
+        if self.pool_name == "" or self.old_disk == "" or self.new_disk == "":
             result={'status':"1",'info':"pool name ,old disk or new disk can`t be null"}
             return result
-        query_result=self.zpool_query(pool_name)
+        query_result=zpool_info(self.ip,self.pool_name)
         if query_result :
-            exe_cmd="zpool replace "+pool_name+' '+old_disk+' '+new_disk
+            exe_cmd="zpool replace "+self.pool_name+' '+self.old_disk+' '+self.new_disk
             exe_result = exe_command(self.ip, exe_cmd)
             result = exe_result
             return result
@@ -130,41 +92,23 @@ class zfs():
             return result
 
 class lvm():
-    def __init__(self,ip="127.0.0.1",vg_name="",lv_name="",lv_size="",ex_size="",disk=[],old_disk=[],new_disk=[],state=""):
+    def __init__(self,ip="127.0.0.1",vg_name="",lv_name="",lv_size="",ex_size="",new_disk=[],vg_disk=[],pv_disk=[],state=""):
         self.ip = ip
         self.vg_name = vg_name
         self.lv_name = lv_name
         self.lv_size = lv_size
         self.ex_size = ex_size
-        self.disks = disk
-        self.old_disk = old_disk
         self.new_disk = new_disk
+        self.vg_disk = vg_disk
+        self.pv_disk = pv_disk
         self.state = state
 
     # def pv_query(self):
     #     exe_cmd="""pvs -o pv_name,pv_size,lv_name,lv_size,vg_size,vg_free,vg_name"""
 
-    def pvl_info(self):
-        exe_cmd = """pvs -o pv_name,vg_name,lv_name"""
-        exe_result = exe_command(self.ip,exe_cmd)
-        pvl = []
-        if exe_result['status'] == "0":
-            for list in exe_result['info'].split('\n'):
-                if re.match(r'  /dev', list):
-                    pv_info={'pv':"",'vg':"",'lv':""}
-                    pv_info['pv'] = list.split()[0].split('/dev/')[1]
-                    if len(list.split()) == 2:
-                        pv_info['vg'] = list.split()[1]
-                    if len(list.split()) == 3:
-                        pv_info['vg'] = list.split()[1]
-                        pv_info['lv'] = list.split()[2]
-                    pvl.append(pv_info)
-        result = pvl
-        return result
-
     def pv_add(self):
-        if self.new_disk:
-            exe_cmd = "pvcreate  "+" ".join(self.new_disk)
+        if self.pv_disk:
+            exe_cmd = "pvcreate  "+" ".join(self.pv_disk)
             exe_result = exe_command(self.ip, exe_cmd)
             result = exe_result
         else:
@@ -172,8 +116,8 @@ class lvm():
         return result
 
     def pv_remove(self):
-        if  self.old_disk:
-            exe_cmd = "pvremove  " +" ".join(self.old_disk)
+        if  self.pv_disk:
+            exe_cmd = "pvremove  " +" ".join(self.pv_disk)
             exe_result = exe_command(self.ip, exe_cmd)
             result = exe_result
         else:
@@ -181,13 +125,13 @@ class lvm():
         return result
 
     def vg_add(self):
-        query_result = self.pvl_info()
-        if self.vg_name and self.disks:
+        query_result = pvl_info(self.ip)
+        if self.vg_name and self.vg_disk:
             for pvl in query_result:
                 if self.vg_name == pvl['vg'] :
                     result = {'status': "1", 'info': "vg group is exsit"}
                     return result
-            exe_cmd = "vgcreate  " + self.vg_name +" "+" ".join(self.disks)
+            exe_cmd = "vgcreate  " + self.vg_name +" "+" ".join(self.vg_disk)
             exe_result = exe_command(self.ip, exe_cmd)
             result = exe_result
             return result
@@ -197,10 +141,10 @@ class lvm():
 
     def vg_remove(self):
         if self.vg_name:
-            query_result = self.pvl_info()
+            query_result = pvl_info(self.ip)
             for pvl in query_result:
                 if self.vg_name == pvl['vg']:
-                    exe_cmd = "echo y|vgremove  " + self.vg_name
+                    exe_cmd = "vgremove  " + self.vg_name+" -f"
                     exe_result = exe_command(self.ip, exe_cmd)
                     result = exe_result
                     return result
@@ -212,7 +156,7 @@ class lvm():
 
     def vg_extend(self):
         if self.vg_name  and self.new_disk:
-            query_result = self.pvl_info()
+            query_result = pvl_info(self.ip)
             for pvl in query_result:
                 if self.vg_name == pvl['vg']:
                         exe_cmd = "vgextend  " + self.vg_name+" "+" ".join(self.new_disk)
@@ -226,7 +170,7 @@ class lvm():
             return result
 
     def lv_add(self):
-        query_result = self.pvl_info()
+        query_result = pvl_info(self.ip)
         if self.lv_name and self.lv_size and self.vg_name:
             for pvl in query_result:
                 if self.lv_name == pvl['lv'] :
@@ -242,11 +186,11 @@ class lvm():
 
     def lv_remove(self):
         if self.lv_name:
-            query_result = self.pvl_info()
+            query_result = pvl_info(self.ip)
             for pvl in query_result:
                 if self.lv_name == pvl['lv']:
                     lv_path="/dev/"+pvl['vg']+"/"+self.lv_name
-                    exe_cmd = "lvremove  " +lv_path
+                    exe_cmd = "lvremove  " +lv_path+" -f"
                     exe_result = exe_command(self.ip, exe_cmd)
                     result = exe_result
                     return result
@@ -258,7 +202,7 @@ class lvm():
 
     def lv_extend(self):
         if self.lv_name and self.ex_size:
-            query_result = self.pvl_info()
+            query_result = pvl_info(self.ip)
             for pvl in query_result:
                 if self.lv_name == pvl['lv']:
                     lv_path = "/dev/" + pvl['vg'] + "/" + self.lv_name
