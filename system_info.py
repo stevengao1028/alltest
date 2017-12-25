@@ -15,10 +15,8 @@ def disk_info(ip="127.0.0.1",disk=""):
             disk_info['size'] = disk.split()[1]
             disk_list.append(disk_info)
     #到raid中查询
-    zfs_info=zfs()
-    query_zfs=zfs_info.zpool_query()
-    lvm_info = lvm()
-    query_lvm = lvm_info.pvl_info()
+    query_zfs = zfs().zpool_query()
+    query_lvm = lvm().pvl_info()
     for num in range(len(disk_list)):
         for pool in query_zfs:
             if disk_list[num]['name'] in pool['disks'] or disk_list[num]['name'] in pool['spares']:
