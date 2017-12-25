@@ -9,7 +9,7 @@ class zfs():
         self.pool_name=pool_name
         self.raid=raid
         self.disks=disks
-        self.sapres=spares
+        self.spares=spares
         self.old_disk=old_disk
         self.new_disk=new_disk
 
