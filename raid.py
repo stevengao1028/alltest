@@ -4,7 +4,7 @@ from function import *
 from system_info import *
 
 class zfs():
-    def __init__(self,ip="127.0.0.1",pool_name="",raid="0",disks=[],spares=[],old_disk="",new_disk=""):
+    def __init__(self,ip="127.0.0.1",pool_name="",raid="0",disks=[],spares=[],old_disk="",new_disk="",zfs_name="",zfs_size=""):
         self.ip=ip
         self.pool_name=pool_name
         self.raid=raid
@@ -12,6 +12,8 @@ class zfs():
         self.spares=spares
         self.old_disk=old_disk
         self.new_disk=new_disk
+        self.zfs_name = zfs_name
+        self.zfs_size = zfs_size
 
     #pre-check system mod
     def check_mod(self):
@@ -85,6 +87,37 @@ class zfs():
         else:
             result={'status':"1",'info':"pool isn`t exsit"}
             return result
+
+
+    def zfs_add(self):
+        if self.pool_name == "" or self.zfs_name == "" or self.zfs_size == "":
+            result={'status':"1",'info':"pool name ,zfs name or zfs size can`t be null"}
+            return result
+        query_result = zpool_info(self.ip, self.pool_name)
+        if query_result:
+            exe_cmd = "zfs create -V " + self.zfs_size + ' ' + self.pool_name + '/' + self.zfs_name
+            exe_result = exe_command(self.ip, exe_cmd)
+            result = exe_result
+            return result
+        else:
+            result={'status':"1",'info':"pool isn`t exsit"}
+            return result
+
+    def zfs_del(self):
+        if self.pool_name == "" or self.zfs_name == "" :
+            result={'status':"1",'info':"pool name or zfs name can`t be null"}
+            return result
+        query_result=zpool_info(self.ip)
+        if query_result :
+            exe_cmd="zpool destroy "+self.pool_name
+            exe_result = exe_command(self.ip,exe_cmd)
+            result = exe_result
+            return result
+        else:
+            result={'status':"1",'info':"pool isn`t exsit"}
+            return result
+
+
 
 class lvm():
     def __init__(self,ip="127.0.0.1",vg_name="",lv_name="",lv_size="",ex_size="",new_disk=[],vg_disk=[],pv_disk=[]):

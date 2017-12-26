@@ -50,7 +50,7 @@ def exe_command(ip,exe_cmd):
         return result
 #init disk
 def disk_init(disk=""):
-    exe_cmd="dd if=/dev/zero of="+disk+" bs=512 count=1"
+    exe_cmd="dd if=/dev/zero of="+disk+" bs=512 count=1000"
     (status, output) = commands.getstatusoutput(exe_cmd)
     result = {'status': str(status), 'info': output}
     return result

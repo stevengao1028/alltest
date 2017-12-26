@@ -5,13 +5,13 @@ import re
 
 def disk_info(ip="127.0.0.1",disk=""):
     #获取系统blk 磁盘信息 ，包含名称，大小，用途的磁盘列表
-    exe_cmd = """lsblk |grep disk|awk '{print $1,$4}'"""
+    exe_cmd = """lsscsi --size |awk '$2~/disk/{print $6,$7}'"""
     exe_result = exe_command(ip,exe_cmd)
     disk_list = []
     if exe_result['status'] == "0":
         for disk in exe_result['info'].split('\n'):
             disk_info = {'name': "", 'size': "", 'usage': "",'type':""}
-            disk_info['name'] = disk.split()[0]
+            disk_info['name'] = disk.split()[0].split('/dev/')[1]
             disk_info['size'] = disk.split()[1]
             disk_list.append(disk_info)
     #到raid中查询
@@ -31,13 +31,19 @@ def disk_info(ip="127.0.0.1",disk=""):
 
 #query_zpool
 def zpool_info(ip="127.0.0.1",pool_name=""):
-    exe_cmd = "zpool status "+pool_name
-    exe_result = exe_command(ip,exe_cmd)
+    exe_cmd_pool = "zpool status "+pool_name
+    exe_result_pool = exe_command(ip,exe_cmd_pool)
     pool_list =[]
-    for pool in exe_result['info'].split('errors'):
-        pool_info = {'name':'','state':'','disks':'','spares':'','raid':'0'}
+    exe_cmd_zfs = "zfs list |awk '$1~/\//{print $1,$2,$3}'"
+    exe_result_zfs = exe_command(ip, exe_cmd_zfs)
+    if exe_result_pool['status'] != "0" or exe_result_zfs['status'] != "0" :
+        result = {'status': "1", 'info': "lookup fails"}
+        return result
+    for pool in exe_result_pool['info'].split('errors'):
+        pool_info = {'name':'','state':'','disks':[],'spares':[],'raid':'0','volumes':[],'used':'','free':''}
         disks=[]
         spares=[]
+        volumes=[]
         for line in pool.split('\n'):
             if line and 'config' not in line and 'spares' not in line:
                 item = line.lstrip(r'       ').split()[0]
@@ -56,8 +62,19 @@ def zpool_info(ip="127.0.0.1",pool_name=""):
                     pool_info['raid'] = "5"
                 if  item.startswith('raidz2'):
                     pool_info['raid'] = "6"
+                vol_info ={}
+                for vol in exe_result_zfs['info'].split('\n'):
+                    if pool_info['name'] == vol.split()[0].split('/')[0]:
+                        vol_name = vol.split()[0].split('/')[1]
+                        vol_used = vol.split()[1]
+                        vol_free = vol.split()[2]
+                        vol_info = {'vol_name':vol_name,'vol_used':vol_used,'vol_free':vol_free}
+                        volumes.append(vol_info)
+                pool_info['volumes'] = volumes
+
         if pool_info['name']:
             pool_list.append(pool_info)
+
     result = pool_list
     # exe_cmd="zpool status "+pool_name+"""  2>/dev/null|awk -F" " '$1~/^pool:/{name=$2}$1~/^sd/{rdisk["\\"",$1,"\\""]=$2}$1~/errors:/{printf "{\\"name\\":\\""name"\\",";for (i in rdisk){printf i":\\""rdisk[i]"\\","}{printf "},"}}END{print ""}'|sed 's/,}/}/g;s/,$//;s/^/[/;s/$/]/'"""
     # exe_result=exe_command(self.ip,exe_cmd)
