@@ -74,13 +74,9 @@ def zpool_info(ip="127.0.0.1",pool_name=""):
                         vol_info = {'vol_name':vol_name,'vol_used':vol_used,'vol_size':vol_size}
                         volumes.append(vol_info)
             pool_info['volumes'] = volumes
-
         if pool_info['name']:
             pool_list.append(pool_info)
-
     result = pool_list
-    # exe_cmd="zpool status "+pool_name+"""  2>/dev/null|awk -F" " '$1~/^pool:/{name=$2}$1~/^sd/{rdisk["\\"",$1,"\\""]=$2}$1~/errors:/{printf "{\\"name\\":\\""name"\\",";for (i in rdisk){printf i":\\""rdisk[i]"\\","}{printf "},"}}END{print ""}'|sed 's/,}/}/g;s/,$//;s/^/[/;s/$/]/'"""
-    # exe_result=exe_command(self.ip,exe_cmd)
     return result
 
 def lvm_info(ip="127.0.0.1"):
