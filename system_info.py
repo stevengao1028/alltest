@@ -5,7 +5,7 @@ import re
 
 def disk_info(ip="127.0.0.1",disk=""):
     #获取系统blk 磁盘信息 ，包含名称，大小，用途的磁盘列表
-    exe_cmd = """lsscsi -ws |awk '$2~/disk/{print $3,$4}'"""
+    exe_cmd = """lsscsi -ws |awk '$2~/disk/{print $(NF-1),$NF}'"""
     exe_result = exe_command(ip,exe_cmd)
     disk_list = []
     if exe_result['status'] == "0" and exe_result['info']:
@@ -64,10 +64,10 @@ def zpool_info(ip="127.0.0.1",pool_name=""):
                     pool_info['raid'] = "6"
         if exe_result_zfs['info']:
             for vol in exe_result_zfs['info'].split('\n'):
-                if  "filesystem" in vol.split()[3]:
-                    pool_info['used'] = vol.split()[4]
-                elif "volume" in vol.split()[3]:
-                    if pool_info['name'] == vol.split()[0].split('/')[0]:
+                if pool_info['name'] == vol.split()[0].split('/')[0]:
+                    if  "filesystem" in vol.split()[3]:
+                        pool_info['used'] = vol.split()[4]
+                    elif "volume" in vol.split()[3]:
                         vol_name = vol.split()[0].split('/')[1]
                         vol_used = vol.split()[1]
                         vol_size = vol.split()[2]
@@ -80,19 +80,27 @@ def zpool_info(ip="127.0.0.1",pool_name=""):
     return result
 
 def lvm_info(ip="127.0.0.1"):
-    exe_cmd = """pvs -o pv_name,vg_name,lv_name"""
+    exe_cmd = """pvs -o vg_name,vg_size,vg_free,pv_name,lv_size,lv_name|awk 'NR>1&&$1'"""
     exe_result = exe_command(ip,exe_cmd)
     pvl = []
-    if exe_result['status'] == "0":
+    vg_names = []
+    if exe_result['status'] == "0"  and exe_result['info']:
         for list in exe_result['info'].split('\n'):
-            if re.match(r'  /dev', list):
-                pv_info={'pv':"",'vg':"",'lv':""}
-                pv_info['pv'] = list.split()[0].split('/dev/')[1]
-                if len(list.split()) == 2:
-                    pv_info['vg'] = list.split()[1]
-                if len(list.split()) == 3:
-                    pv_info['vg'] = list.split()[1]
-                    pv_info['lv'] = list.split()[2]
-                pvl.append(pv_info)
+            if list.split()[0] and list.split()[0] not in vg_names and len(list.split()) <= 6:
+                vg_names.append(list.split()[0])
+    for vg in vg_names:
+        pvs = [];lvs = [];vg_info = {}
+        for list in exe_result['info'].split('\n'):
+            if list.split()[0] == vg:
+                vg_info['vg'] = list.split()[0]
+                vg_info['size'] = list.split()[1]
+                vg_info['free'] = list.split()[2]
+                if list.split()[3].split('/')[2] not in pvs:
+                    pvs.append(list.split()[3].split('/')[2])
+                if len(list.split()) == 6:
+                    lvs.append(list.split()[5])
+        vg_info['pv'] = pvs
+        vg_info['lv'] = lvs
+        pvl.append(vg_info)
     result = pvl
     return result
