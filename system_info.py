@@ -37,7 +37,7 @@ def zpool_info(ip="127.0.0.1",pool_name=""):
     exe_cmd_zfs = "zfs list -o name,logicalused,volsize,type,used"
     exe_result_zfs = exe_command(ip, exe_cmd_zfs)
     if exe_result_pool['status'] != "0" or exe_result_zfs['status'] != "0" :
-        result = {'status': "1", 'info': "lookup fails"}
+        result = []
         return result
     for pool in exe_result_pool['info'].split('errors'):
         pool_info = {'name':'','state':'','disks':[],'spares':[],'raid':'0','volumes':[],'used':'','size':''}
@@ -79,15 +79,23 @@ def zpool_info(ip="127.0.0.1",pool_name=""):
     result = pool_list
     return result
 
-def lvm_info(ip="127.0.0.1"):
+def lvm_info(ip="127.0.0.1",vg_name=""):
     exe_cmd = """pvs -o vg_name,vg_size,vg_free,pv_name,lv_size,lv_name|awk 'NR>1&&$1'"""
-    exe_result = exe_command(ip,exe_cmd)
+    exe_result = exe_command(ip, exe_cmd)
     pvl = []
     vg_names = []
-    if exe_result['status'] == "0"  and exe_result['info']:
-        for list in exe_result['info'].split('\n'):
-            if list.split()[0] and list.split()[0] not in vg_names and len(list.split()) <= 6:
-                vg_names.append(list.split()[0])
+    if vg_name:
+        vg_names.append(vg_name)
+    else:
+        if exe_result['status'] != "0":
+            result = []
+            return result
+        if  exe_result['info']:
+            for list in exe_result['info'].split('\n'):
+                if list.split()[0] and list.split()[0] not in vg_names and len(list.split()) <= 6:
+                    vg_names.append(list.split()[0])
+
+
     for vg in vg_names:
         pvs = [];lvs = [];vg_info = {}
         for list in exe_result['info'].split('\n'):
@@ -101,6 +109,7 @@ def lvm_info(ip="127.0.0.1"):
                     lvs.append(list.split()[5])
         vg_info['pv'] = pvs
         vg_info['lv'] = lvs
-        pvl.append(vg_info)
+        if vg_info['pv']:
+            pvl.append(vg_info)
     result = pvl
     return result

@@ -42,7 +42,7 @@ class zfs():
         else :
             result={'status':"1",'info':"raid level did not been define"}
             return result
-        query_result=zpool_info(self.ip)
+        query_result=zpool_info(self.ip,self.pool_name)
         if query_result :
             result={'status':"1",'info':"pool is exsit"}
             return result
@@ -63,7 +63,7 @@ class zfs():
         if self.pool_name == "":
             result={'status':"1",'info':"pool name can`t be null"}
             return result
-        query_result=zpool_info(self.ip)
+        query_result=zpool_info(self.ip,self.pool_name)
         if query_result :
             exe_cmd="zpool destroy "+self.pool_name
             exe_result = exe_command(self.ip,exe_cmd)
@@ -93,8 +93,12 @@ class zfs():
         if self.pool_name == "" or self.zfs_name == "" or self.zfs_size == "":
             result={'status':"1",'info':"pool name ,zfs name or zfs size can`t be null"}
             return result
-        query_result = zpool_info(self.ip, self.pool_name)
+        query_result = zpool_info(self.ip,self.pool_name)
         if query_result:
+            for volume in query_result[0]['volumes']:
+                if volume['vol_name'] == self.zfs_name:
+                    result = {'status': "1", 'info': "vol is exsit "}
+                    return result
             exe_cmd = "zfs create -V " + self.zfs_size + ' ' + self.pool_name + '/' + self.zfs_name
             exe_result = exe_command(self.ip, exe_cmd)
             result = exe_result
@@ -107,11 +111,15 @@ class zfs():
         if self.pool_name == "" or self.zfs_name == "" :
             result={'status':"1",'info':"pool name or zfs name can`t be null"}
             return result
-        query_result=zpool_info(self.ip)
-        if query_result :
-            exe_cmd="zpool destroy "+self.pool_name
-            exe_result = exe_command(self.ip,exe_cmd)
-            result = exe_result
+        query_result=zpool_info(self.ip,self.pool_name)
+        if query_result:
+            for volume in query_result[0]['volumes']:
+                if volume['vol_name'] == self.zfs_name:
+                    exe_cmd = "zfs destroy " + self.pool_name + '/' + self.zfs_name
+                    exe_result = exe_command(self.ip, exe_cmd)
+                    result = exe_result
+                    return result
+            result = {'status': "1", 'info': "vol  isn`t exsit "}
             return result
         else:
             result={'status':"1",'info':"pool isn`t exsit"}
@@ -152,93 +160,78 @@ class lvm():
         return result
 
     def vg_add(self):
-        query_result = lvm_info(self.ip)
-        if self.vg_name and self.vg_disk:
-            for pvl in query_result:
-                if self.vg_name == pvl['vg'] :
-                    result = {'status': "1", 'info': "vg group is exsit"}
-                    return result
+        query_result = lvm_info(self.ip,self.vg_name)
+        if self.vg_name and self.vg_disk and not query_result:
             exe_cmd = "vgcreate  " + self.vg_name +" "+" ".join(self.vg_disk)+" -y"
             exe_result = exe_command(self.ip, exe_cmd)
             result = exe_result
             return result
         else:
-            result = {'status': "1", 'info': "vg name or disk can`t be null"}
+            result = {'status': "1", 'info': "vg name or disk can`t be null | vg group is exsit"}
             return result
 
     def vg_remove(self):
-        if self.vg_name:
-            query_result = lvm_info(self.ip)
-            for pvl in query_result:
-                if self.vg_name == pvl['vg']:
-                    exe_cmd = "vgremove  " + self.vg_name+" -y"
-                    exe_result = exe_command(self.ip, exe_cmd)
-                    result = exe_result
-                    return result
-            result = {'status': "1", 'info': "vg group is not exsit"}
-            return result
+        query_result = lvm_info(self.ip, self.vg_name)
+        if self.vg_name and query_result:
+                exe_cmd = "vgremove  " + self.vg_name+" -y"
+                exe_result = exe_command(self.ip, exe_cmd)
+                result = exe_result
+                return result
         else:
-            result = {'status': "1", 'info': "vg name  can`t be null"}
+            result = {'status': "1", 'info': "vg name can`t be null |vg is not exsit"}
             return result
 
     def vg_extend(self):
-        if self.vg_name  and self.new_disk:
-            query_result = lvm_info(self.ip)
-            for pvl in query_result:
-                if self.vg_name == pvl['vg']:
-                        exe_cmd = "vgextend  " + self.vg_name+" "+" ".join(self.new_disk)+" -y"
-                        exe_result = exe_command(self.ip, exe_cmd)
-                        result = exe_result
-                        return result
-            result = {'status': "1", 'info': "vg group  is not exsit "}
+        query_result = lvm_info(self.ip, self.vg_name)
+        if self.vg_name  and self.new_disk and query_result:
+            exe_cmd = "vgextend  " + self.vg_name+" "+" ".join(self.new_disk)+" -y"
+            exe_result = exe_command(self.ip, exe_cmd)
+            result = exe_result
             return result
         else:
-            result = {'status': "1", 'info': "vg name  or disk can`t be null"}
+            result = {'status': "1", 'info': "vg name or disk can`t be null | vg group is not exsit"}
             return result
 
     def lv_add(self):
-        query_result = lvm_info(self.ip)
-        if self.lv_name and self.lv_size and self.vg_name:
-            for pvl in query_result:
-                if self.vg_name == pvl['vg'] and self.lv_name in pvl['lv']:
-                    result = {'status': "1", 'info': "lv volume is exsit"}
-                    return result
+        query_result = lvm_info(self.ip, self.vg_name)
+        if self.lv_name and self.lv_size and self.vg_name and query_result:
+            if self.lv_name in query_result[0]['lv']:
+                result = {'status': "1", 'info': "lv volume is exsit"}
+                return result
             exe_cmd = "lvcreate  -L " +self.lv_size+" -n "+self.lv_name +" "+self.vg_name+" -y"
             exe_result = exe_command(self.ip, exe_cmd)
             result = exe_result
             return result
         else:
-            result = {'status': "1", 'info': "lv volume lv size or vg name can`t be null"}
+            result = {'status': "1", 'info': "lv volume|size or vg name can`t be null | vg group is not exsit "}
             return result
 
     def lv_remove(self):
-        if self.lv_name:
-            query_result = lvm_info(self.ip)
-            for pvl in query_result:
-                if self.vg_name == pvl['vg'] and self.lv_name in pvl['lv']:
-                    lv_path="/dev/"+pvl['vg']+"/"+self.lv_name
-                    exe_cmd = "lvremove  " +lv_path+" -y"
-                    exe_result = exe_command(self.ip, exe_cmd)
-                    result = exe_result
-                    return result
-            result = {'status': "1", 'info': "lv group is not exsit"}
+        query_result = lvm_info(self.ip, self.vg_name)
+        if self.lv_name and self.vg_name and query_result:
+            if  self.lv_name in query_result[0]['lv']:
+                lv_path="/dev/"+self.vg_name+"/"+self.lv_name
+                exe_cmd = "lvremove  " +lv_path+" -y"
+                exe_result = exe_command(self.ip, exe_cmd)
+                result = exe_result
+                return result
+            result = {'status': "1", 'info': "lv volume is not exsit"}
             return result
         else:
-            result = {'status': "1", 'info': "lv volume can`t be null"}
+            result = {'status': "1", 'info': "vg group or lv volume can`t be null | vg group is not exsit "}
             return result
 
     def lv_extend(self):
-        if self.lv_name and self.ex_size:
-            query_result = lvm_info(self.ip)
-            for pvl in query_result:
-                if self.vg_name == pvl['vg'] and self.lv_name in pvl['lv']:
-                    lv_path = "/dev/" + pvl['vg'] + "/" + self.lv_name
-                    exe_cmd = "lvextend  -L +" + self.ex_size +" "+lv_path+" -y"
-                    exe_result = exe_command(self.ip, exe_cmd)
-                    result = exe_result
-                    return result
+        query_result = lvm_info(self.ip, self.vg_name)
+        if self.lv_name and self.ex_size and query_result:
+            if self.lv_name in query_result[0]['lv']:
+                lv_path = "/dev/" + self.vg_name + "/" + self.lv_name
+                exe_cmd = "lvextend  -L +" + self.ex_size +" "+lv_path+" -y"
+                exe_result = exe_command(self.ip, exe_cmd)
+                result = exe_result
+                return result
             result = {'status': "1", 'info': "lv volume  is not exsit "}
             return result
         else:
-            result = {'status': "1", 'info': "lv volume  or extend size can`t be null"}
+            result = {'status': "1", 'info': "lv volume or extend size can`t be null | vg group is not exsit"}
             return result
