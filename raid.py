@@ -158,7 +158,7 @@ class lvm():
                 if self.vg_name == pvl['vg'] :
                     result = {'status': "1", 'info': "vg group is exsit"}
                     return result
-            exe_cmd = "vgcreate  " + self.vg_name +" "+" ".join(self.vg_disk)
+            exe_cmd = "vgcreate  " + self.vg_name +" "+" ".join(self.vg_disk)+" -y"
             exe_result = exe_command(self.ip, exe_cmd)
             result = exe_result
             return result
@@ -166,12 +166,12 @@ class lvm():
             result = {'status': "1", 'info': "vg name or disk can`t be null"}
             return result
 
-    def vg_remove(self,force=""):
+    def vg_remove(self):
         if self.vg_name:
             query_result = lvm_info(self.ip)
             for pvl in query_result:
                 if self.vg_name == pvl['vg']:
-                    exe_cmd = "echo y|vgremove  " + self.vg_name+force
+                    exe_cmd = "vgremove  " + self.vg_name+" -y"
                     exe_result = exe_command(self.ip, exe_cmd)
                     result = exe_result
                     return result
@@ -186,7 +186,7 @@ class lvm():
             query_result = lvm_info(self.ip)
             for pvl in query_result:
                 if self.vg_name == pvl['vg']:
-                        exe_cmd = "vgextend  " + self.vg_name+" "+" ".join(self.new_disk)
+                        exe_cmd = "vgextend  " + self.vg_name+" "+" ".join(self.new_disk)+" -y"
                         exe_result = exe_command(self.ip, exe_cmd)
                         result = exe_result
                         return result
@@ -200,10 +200,10 @@ class lvm():
         query_result = lvm_info(self.ip)
         if self.lv_name and self.lv_size and self.vg_name:
             for pvl in query_result:
-                if self.lv_name == pvl['lv'] :
+                if self.vg_name == pvl['vg'] and self.lv_name in pvl['lv']:
                     result = {'status': "1", 'info': "lv volume is exsit"}
                     return result
-            exe_cmd = "echo y|lvcreate  -L " +self.lv_size+" -n "+self.lv_name +" "+self.vg_name
+            exe_cmd = "lvcreate  -L " +self.lv_size+" -n "+self.lv_name +" "+self.vg_name+" -y"
             exe_result = exe_command(self.ip, exe_cmd)
             result = exe_result
             return result
@@ -211,13 +211,13 @@ class lvm():
             result = {'status': "1", 'info': "lv volume lv size or vg name can`t be null"}
             return result
 
-    def lv_remove(self,force=""):
+    def lv_remove(self):
         if self.lv_name:
             query_result = lvm_info(self.ip)
             for pvl in query_result:
-                if self.lv_name == pvl['lv']:
+                if self.vg_name == pvl['vg'] and self.lv_name in pvl['lv']:
                     lv_path="/dev/"+pvl['vg']+"/"+self.lv_name
-                    exe_cmd = "echo y|lvremove  " +lv_path+force
+                    exe_cmd = "lvremove  " +lv_path+" -y"
                     exe_result = exe_command(self.ip, exe_cmd)
                     result = exe_result
                     return result
@@ -231,9 +231,9 @@ class lvm():
         if self.lv_name and self.ex_size:
             query_result = lvm_info(self.ip)
             for pvl in query_result:
-                if self.lv_name == pvl['lv']:
+                if self.vg_name == pvl['vg'] and self.lv_name in pvl['lv']:
                     lv_path = "/dev/" + pvl['vg'] + "/" + self.lv_name
-                    exe_cmd = "lvextend  -L +" + self.ex_size +" "+lv_path
+                    exe_cmd = "lvextend  -L +" + self.ex_size +" "+lv_path+" -y"
                     exe_result = exe_command(self.ip, exe_cmd)
                     result = exe_result
                     return result
