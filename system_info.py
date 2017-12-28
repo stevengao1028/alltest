@@ -113,3 +113,44 @@ def lvm_info(ip="127.0.0.1",vg_name=""):
             pvl.append(vg_info)
     result = pvl
     return result
+
+
+def md_info(ip="127.0.0.1",md_name=""):
+    if md_name == "":
+        exe_cmd = """cat /proc/mdstat |awk  'NR>1&&/raid/'"""
+    else:
+        exe_cmd = """cat /proc/mdstat |awk  'NR>1&&/raid/'|grep """+md_name
+    exe_result = exe_command(ip, exe_cmd)
+    if exe_result['status'] != "0" or not exe_result['info']:
+        result = []
+        return result
+    md = []
+    for list in  exe_result['info'].split('\n'):
+        disk = [];spare = []
+        md_info = {}
+        md_info['name'] = list.split(':')[0]
+        info = list.split(':')[1].split()
+        md_info['stat'] = info[0]
+        del info[0]
+        for col in info:
+            if col.endswith("(S)")  :
+                spare.append(col.split("[")[0])
+            elif "raid" in col:
+                md_info['raid'] = col.replace("raid","")
+            elif col.endswith("]"):
+                disk.append(col.split("[")[0])
+        md_info['spare'] = spare
+        md_info['disk'] = disk
+        if md_info['name']:
+            md.append(md_info)
+    result = md
+    return result
+
+
+
+
+
+
+
+
+

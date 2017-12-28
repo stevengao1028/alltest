@@ -235,3 +235,43 @@ class lvm():
         else:
             result = {'status': "1", 'info': "lv volume or extend size can`t be null | vg group is not exsit"}
             return result
+
+class md():
+    def __init__(self, ip="127.0.0.1",raid="",md_name="",disk=[],spare=[],new_disk=[]):
+        self.ip = ip
+        self.md_name = md_name
+        self.raid = raid
+        self.spare = spare
+        self.disk = disk
+        self.new_disk = new_disk
+
+    def md_add(self):
+        query_result = md_info(self.ip, self.md_name)
+        if self.md_name and self.disk and not query_result:
+            disk_num = str(len(self.disk))
+            spare_num = str(len(self.spare))
+            if self.spare:
+                exe_cmd = "mdadm --create /dev/" + self.md_name + " --level=" + self.raid + " --raid-devices=" + disk_num +" "+" ".join(self.disk) + " spare-devices=" + spare_num +" "+ " ".join(self.spare)
+            else:
+                exe_cmd = "mdadm --create /dev/" + self.md_name + " --level=" + self.raid + " --raid-devices=" + disk_num +" "+ " ".join(self.disk)
+            exe_result = exe_command(self.ip, exe_cmd)
+            result = exe_result
+            return result
+        else:
+            result = {'status': "1", 'info': "md name or disk can`t be null | md group is exsit"}
+            return result
+
+    def md_del(self):
+        query_result = md_info(self.ip, self.md_name)
+        if self.md_name and  query_result:
+            exe_cmd = "mdadm -S /dev/" + self.md_name
+            exe_result = exe_command(self.ip, exe_cmd)
+            if exe_result['status'] == "0":
+                exe_cmd = "mdadm --zero-superblock " + self.md_name+" ".join(self.disk)
+                exe_result = exe_command(self.ip, exe_cmd)
+            result = exe_result
+            return result
+        else:
+            result = {'status': "1", 'info': "md name cant be null |md name isn`t exsit"}
+            return result
+
