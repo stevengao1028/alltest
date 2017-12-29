@@ -13,13 +13,14 @@ def disk_info(ip="127.0.0.1",disk=""):
         return result
     else:
         for disk in exe_result['info'].split('\n'):
-            disk_info = {'name': "", 'size': "", 'usage': "",'type':""}
+            disk_info = {'name': "", 'size': "", 'usage': "",'type':"",'ip':ip}
             disk_info['name'] = disk.split()[0].split('/dev/')[1]
             disk_info['size'] = disk.split()[1]
             disk_list.append(disk_info)
     #到raid中查询
     query_zfs = zpool_info(ip)
     query_lvm = lvm_info(ip)
+    query_md = md_info(ip)
     for num in range(len(disk_list)):
         for pool in query_zfs:
             if disk_list[num]['name'] in pool['disks'] or disk_list[num]['name'] in pool['spares']:
@@ -29,6 +30,10 @@ def disk_info(ip="127.0.0.1",disk=""):
             if disk_list[num]['name'] in pvl['pv']:
                 disk_list[num]['usage'] = pvl['vg']
                 disk_list[num]['type'] = "lvm"
+        for md in query_md:
+            if disk_list[num]['name'] in md['disk']:
+                disk_list[num]['usage'] = md['name']
+                disk_list[num]['type'] = "md"
     result = disk_list
     return result
 
@@ -44,7 +49,7 @@ def zpool_info(ip="127.0.0.1",pool_name=""):
         return result
     if  exe_result_pool['info']:
         for pool in exe_result_pool['info'].split('errors'):
-            pool_info = {'name':'','state':'','disks':[],'spares':[],'raid':'0','volumes':[],'used':'','size':''}
+            pool_info = {'name':'','state':'','disks':[],'spares':[],'raid':'0','volumes':[],'used':'','size':'','ip':ip}
             disks=[]
             spares=[]
             volumes=[]
@@ -99,7 +104,7 @@ def lvm_info(ip="127.0.0.1",vg_name=""):
             if list.split()[0] and list.split()[0] not in vg_names and len(list.split()) <= 6:
                 vg_names.append(list.split()[0])
     for vg in vg_names:
-        pvs = [];lvs = [];vg_info = {'vg':'','size':'','free':'','pv':[],'lv':[]}
+        pvs = [];lvs = [];vg_info = {'vg':'','size':'','free':'','pv':[],'lv':[],'ip':ip}
         for list in exe_result['info'].split('\n'):
             if list.split()[0] == vg:
                 vg_info['vg'] = list.split()[0]
@@ -129,7 +134,7 @@ def md_info(ip="127.0.0.1",md_name=""):
     md = []
     for list in  exe_result_md['info'].split('\n'):
         disk = [];spare = []
-        md_info = {'name':'','stat':'','size':'','raid':'','spare':[],'disk':[]}
+        md_info = {'name':'','stat':'','size':'','raid':'','spare':[],'disk':[],'ip':ip}
         md_info['name'] = list.split(' :')[0]
         info = list.split(':')[1].split()
         md_info['stat'] = info[0]
