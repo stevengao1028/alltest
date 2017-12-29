@@ -50,8 +50,8 @@ def zpool_info(ip="127.0.0.1",pool_name=""):
             volumes=[]
             for line in pool.split('\n'):
                 if line and 'config' not in line and 'spares' not in line:
-                    item = line.lstrip(r'       ').split()[0]
-                    value = line.lstrip(r'      ').split()[1]
+                    item = line.lstrip().split()[0]
+                    value = line.lstrip().split()[1]
                     if item =='pool:':
                         pool_info['name'] = value
                     if item =='state:':
@@ -99,7 +99,7 @@ def lvm_info(ip="127.0.0.1",vg_name=""):
             if list.split()[0] and list.split()[0] not in vg_names and len(list.split()) <= 6:
                 vg_names.append(list.split()[0])
     for vg in vg_names:
-        pvs = [];lvs = [];vg_info = {}
+        pvs = [];lvs = [];vg_info = {'vg':'','size':'','free':'','pv':[],'lv':[]}
         for list in exe_result['info'].split('\n'):
             if list.split()[0] == vg:
                 vg_info['vg'] = list.split()[0]
@@ -129,7 +129,7 @@ def md_info(ip="127.0.0.1",md_name=""):
     md = []
     for list in  exe_result_md['info'].split('\n'):
         disk = [];spare = []
-        md_info = {}
+        md_info = {'name':'','stat':'','size':'','raid':'','spare':[],'disk':[]}
         md_info['name'] = list.split(' :')[0]
         info = list.split(':')[1].split()
         md_info['stat'] = info[0]
