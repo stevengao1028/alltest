@@ -37,7 +37,7 @@ def zpool_info(ip="127.0.0.1",pool_name=""):
     exe_cmd_pool = "zpool status "+pool_name
     exe_result_pool = exe_command(ip,exe_cmd_pool)
     pool_list =[]
-    exe_cmd_zfs = "zfs list -o name,logicalused,volsize,type,used"
+    exe_cmd_zfs = "zfs list -o name,logicalused,volsize,type,used,available|awk '{print $1,$2,$3,$4,$5,int($5)+int($6)}'"
     exe_result_zfs = exe_command(ip, exe_cmd_zfs)
     if exe_result_pool['status'] != "0" or exe_result_zfs['status'] != "0" :
         result = []
@@ -71,6 +71,7 @@ def zpool_info(ip="127.0.0.1",pool_name=""):
                     if pool_info['name'] == vol.split()[0].split('/')[0]:
                         if  "filesystem" in vol.split()[3]:
                             pool_info['used'] = vol.split()[4]
+                            pool_info['size'] = vol.split()[5]+"G"
                         elif "volume" in vol.split()[3]:
                             vol_name = vol.split()[0].split('/')[1]
                             vol_used = vol.split()[1]
