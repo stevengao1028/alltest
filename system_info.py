@@ -8,7 +8,10 @@ def disk_info(ip="127.0.0.1",disk=""):
     exe_cmd = """lsscsi -ws |awk '$2~/disk/{print $(NF-1),$NF}'"""
     exe_result = exe_command(ip,exe_cmd)
     disk_list = []
-    if exe_result['status'] == "0" and exe_result['info']:
+    if exe_result['status'] != "0" or not exe_result['info']:
+        result = []
+        return result
+    else:
         for disk in exe_result['info'].split('\n'):
             disk_info = {'name': "", 'size': "", 'usage': "",'type':""}
             disk_info['name'] = disk.split()[0].split('/dev/')[1]
@@ -39,43 +42,44 @@ def zpool_info(ip="127.0.0.1",pool_name=""):
     if exe_result_pool['status'] != "0" or exe_result_zfs['status'] != "0" :
         result = []
         return result
-    for pool in exe_result_pool['info'].split('errors'):
-        pool_info = {'name':'','state':'','disks':[],'spares':[],'raid':'0','volumes':[],'used':'','size':''}
-        disks=[]
-        spares=[]
-        volumes=[]
-        for line in pool.split('\n'):
-            if line and 'config' not in line and 'spares' not in line:
-                item = line.lstrip(r'       ').split()[0]
-                value = line.lstrip(r'      ').split()[1]
-                if item =='pool:':
-                    pool_info['name'] = value
-                if item =='state:':
-                    pool_info['state'] = value
-                if item.startswith('sd') and value !="AVAIL":
-                    disks.append(item)
-                    pool_info['disks'] = disks
-                if value =="AVAIL":
-                    spares.append(item)
-                    pool_info['spares'] = spares
-                if  item.startswith('raidz1'):
-                    pool_info['raid'] = "5"
-                if  item.startswith('raidz2'):
-                    pool_info['raid'] = "6"
-        if exe_result_zfs['info']:
-            for vol in exe_result_zfs['info'].split('\n'):
-                if pool_info['name'] == vol.split()[0].split('/')[0]:
-                    if  "filesystem" in vol.split()[3]:
-                        pool_info['used'] = vol.split()[4]
-                    elif "volume" in vol.split()[3]:
-                        vol_name = vol.split()[0].split('/')[1]
-                        vol_used = vol.split()[1]
-                        vol_size = vol.split()[2]
-                        vol_info = {'vol_name':vol_name,'vol_used':vol_used,'vol_size':vol_size}
-                        volumes.append(vol_info)
-            pool_info['volumes'] = volumes
-        if pool_info['name']:
-            pool_list.append(pool_info)
+    if  exe_result_pool['info']:
+        for pool in exe_result_pool['info'].split('errors'):
+            pool_info = {'name':'','state':'','disks':[],'spares':[],'raid':'0','volumes':[],'used':'','size':''}
+            disks=[]
+            spares=[]
+            volumes=[]
+            for line in pool.split('\n'):
+                if line and 'config' not in line and 'spares' not in line:
+                    item = line.lstrip(r'       ').split()[0]
+                    value = line.lstrip(r'      ').split()[1]
+                    if item =='pool:':
+                        pool_info['name'] = value
+                    if item =='state:':
+                        pool_info['state'] = value
+                    if item.startswith('sd') and value !="AVAIL":
+                        disks.append(item)
+                        pool_info['disks'] = disks
+                    if value =="AVAIL":
+                        spares.append(item)
+                        pool_info['spares'] = spares
+                    if  item.startswith('raidz1'):
+                        pool_info['raid'] = "5"
+                    if  item.startswith('raidz2'):
+                        pool_info['raid'] = "6"
+            if exe_result_zfs['info']:
+                for vol in exe_result_zfs['info'].split('\n'):
+                    if pool_info['name'] == vol.split()[0].split('/')[0]:
+                        if  "filesystem" in vol.split()[3]:
+                            pool_info['used'] = vol.split()[4]
+                        elif "volume" in vol.split()[3]:
+                            vol_name = vol.split()[0].split('/')[1]
+                            vol_used = vol.split()[1]
+                            vol_size = vol.split()[2]
+                            vol_info = {'vol_name':vol_name,'vol_used':vol_used,'vol_size':vol_size}
+                            volumes.append(vol_info)
+                pool_info['volumes'] = volumes
+            if pool_info['name']:
+                pool_list.append(pool_info)
     result = pool_list
     return result
 
@@ -87,15 +91,12 @@ def lvm_info(ip="127.0.0.1",vg_name=""):
     if vg_name:
         vg_names.append(vg_name)
     else:
-        if exe_result['status'] != "0":
+        if exe_result['status'] != "0" or not  exe_result['info']:
             result = []
             return result
-        if  exe_result['info']:
-            for list in exe_result['info'].split('\n'):
-                if list.split()[0] and list.split()[0] not in vg_names and len(list.split()) <= 6:
-                    vg_names.append(list.split()[0])
-
-
+        for list in exe_result['info'].split('\n'):
+            if list.split()[0] and list.split()[0] not in vg_names and len(list.split()) <= 6:
+                vg_names.append(list.split()[0])
     for vg in vg_names:
         pvs = [];lvs = [];vg_info = {}
         for list in exe_result['info'].split('\n'):
@@ -117,21 +118,25 @@ def lvm_info(ip="127.0.0.1",vg_name=""):
 
 def md_info(ip="127.0.0.1",md_name=""):
     if md_name == "":
-        exe_cmd = """cat /proc/mdstat |awk  'NR>1&&/raid/'"""
+        exe_cmd_md = """cat /proc/mdstat |awk  'NR>1&&/raid/'"""
     else:
-        exe_cmd = """cat /proc/mdstat |awk  'NR>1&&/raid/'|grep """+md_name
-    exe_result = exe_command(ip, exe_cmd)
-    if exe_result['status'] != "0" or not exe_result['info']:
+        exe_cmd_md = """cat /proc/mdstat |awk  'NR>1&&/raid/'|grep """+md_name
+    exe_result_md = exe_command(ip, exe_cmd_md)
+    if exe_result_md['status'] != "0" or not exe_result_md['info']:
         result = []
         return result
     md = []
-    for list in  exe_result['info'].split('\n'):
+    for list in  exe_result_md['info'].split('\n'):
         disk = [];spare = []
         md_info = {}
-        md_info['name'] = list.split(':')[0]
+        md_info['name'] = list.split(' :')[0]
         info = list.split(':')[1].split()
         md_info['stat'] = info[0]
-        del info[0]
+        exe_cmd_size ="cat /sys/class/block/"+md_info['name']+"/size |awk '{print int($1)*512/1024/1024/1024}'"
+        exe_result_size = exe_command(ip, exe_cmd_size)
+        if exe_result_size['status'] == "0":
+            md_info['size'] = exe_result_size['info']+"GB"
+        # del info[0]
         for col in info:
             if col.endswith("(S)")  :
                 spare.append(col.split("[")[0])
