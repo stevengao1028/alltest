@@ -21,6 +21,7 @@ def disk_info(ip="127.0.0.1",disk=""):
     query_zfs = zpool_info(ip)
     query_lvm = lvm_info(ip)
     query_md = md_info(ip)
+    
     for num in range(len(disk_list)):
         for pool in query_zfs:
             if disk_list[num]['name'] in pool['disks'] or disk_list[num]['name'] in pool['spares']:
