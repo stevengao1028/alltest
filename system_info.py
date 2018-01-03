@@ -36,7 +36,7 @@ def disk_info(ip="127.0.0.1",disk="",free="no"):
             if disk_list[num]['name'] in md['disk']:
                 disk_list[num]['usage'] = md['name']
                 disk_list[num]['type'] = "md"
-        if not disk_list[num]['usage'] and disk_list[num]['type']:
+        if not disk_list[num]['usage'] and not disk_list[num]['type']:
             free_list.append(disk_list[num])
     if free =="yes":
         result = free_list
