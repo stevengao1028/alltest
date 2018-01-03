@@ -3,11 +3,12 @@
 from function import *
 import re
 
-def disk_info(ip="127.0.0.1",disk=""):
+def disk_info(ip="127.0.0.1",disk="",free="no"):
     #获取系统blk 磁盘信息 ，包含名称，大小，用途的磁盘列表
     exe_cmd = """lsscsi -ws |awk '$2~/disk/{print $(NF-1),$NF}'"""
     exe_result = exe_command(ip,exe_cmd)
     disk_list = []
+    free_list = []
     if exe_result['status'] != "0" or not exe_result['info']:
         result = []
         return result
@@ -35,7 +36,12 @@ def disk_info(ip="127.0.0.1",disk=""):
             if disk_list[num]['name'] in md['disk']:
                 disk_list[num]['usage'] = md['name']
                 disk_list[num]['type'] = "md"
-    result = disk_list
+        if not disk_list[num]['usage'] and disk_list[num]['type']:
+            free_list.append(disk_list[num])
+    if free =="yes":
+        result = free_list
+    else:
+        result = disk_list
     return result
 
 #query_zpool
