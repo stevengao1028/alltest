@@ -1,0 +1,21 @@
+#!/bin/bash
+export LANG=en_US-UTF8
+PRO_DIR=$1
+NET_PORT=$2
+WEB_DIR=$PRO_DIR/web
+LIB_DIR=$PRO_DIR/lib
+
+unzip ibsanweb.zip
+cp -r ibsanweb/* $PRO_DIR
+rm -rf ibsanweb
+
+for list in `ls $LIB_DIR`;do
+    PYPATH=$PYPATH:$LIB_DIR/$list
+done
+PYPATH=`echo $PYPATH|sed 's/://'`
+declare -x  PYTHONPATH=$PYPATH
+
+cd $WEB_DIR
+python web.py $NET_PORT
+
+
