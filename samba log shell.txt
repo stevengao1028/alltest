@@ -1,0 +1,5 @@
+tail -F /var/log/messages |awk -F '[| ]' '/smbd_audit/{print $1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12.$13,$14,$15;fflush()}' >>/var/log/samba/audit.log
+
+
+https://wiki.samba.org/index.php/Setting_up_Audit_Logging
+
