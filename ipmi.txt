@@ -1,0 +1,57 @@
+IPMI命令常用命令设置
+原创 2016年12月02日 12:55:03
+
+    标签：
+    BMC /
+    IPMI /
+    IPMITool /
+    Linux
+
+??
+1、LAN configuration
+一共有16个channel，找到所使用的channel
+for i in `seq 1 14`; do ipmitool lan print $i 2>/dev/null | grep -q ^Set && echo Channel $i; done
+
+ipmitool -I open lan print 1                           显示BMC通道的信息，如果不知道BMC使用的是哪个通道，请使用下面的命令确认：
+ipmitool -I open channel info 1
+ipmitool -I open lan set 1 ipsrc static                设置本地BMC地址为静态，才能设置IP
+ipmitool -I open lan set 1 ipaddr 10.53.11.113         设置本地BMC的IP地址
+ipmitool -I open lan set 1 netmask 255.255.255.0       子网掩码，别忘了设
+ipmitool -I open lan set 1 defgw ipaddr 10.53.11.254   网关，可设可不设，不过一定要确保监控它的机器位于同一路由
+ipmitool user list 1     查看BMC的用户列表
+ipmitool user set name 1 username 对BMC的1号用户设置用户名username
+ipmitool user set password 1 123456 对BMC的1号用户设置密码123456
+关于lan：
+lan用于远程访问，电源管理等。
+open用于本地访问。
+lanplus用于sol
+
+
+2、一旦设置好ip，就可以通过远程服务器来更改ipmi的配置了。但是远程服务器需先安装ipmitool
+ipmitool -I lan -U root -P wowcool321??? -H 210.77.146.102 power status
+关于debug
+ipmitool -vv -I lanplus -U ipmiuser -P password -H 172.168.6.3 power status
+
+3、ipmitool 常用命令
+
+# ipmitool -I lan -H 172.168.6.3 -U root -P 密码 power off (硬关机，直接切断电源)
+# ipmitool -I lan -H 172.168.6.3 -U root -P 密码 power soft (软关机，即如同轻按一下开机扭，对于linux，服务器将halt，power status 为off)
+# ipmitool -I lan -H 172.168.6.3 -U root -P 密码 power on (硬开机)
+# ipmitool -I lan -H 172.168.6.3 -U root -P 密码 power reset (硬重启)
+# ipmitool -I lan -H 172.168.6.3 -U root -P 密码 power status ( 获取当前电源状态)
+# ipmitool -I lanplus -U root -P "password" -H 172.168.6.3 sensor get "Ambient Temp"| /bin/grep -i "Sensor Reading"|/bin/cut -c 26-28 //获取机箱温度.
+ipmitool -I lanplus -U root -P "wowcool321???" -H 210.77.146.102 sensor get "Ambient Temp"| /bin/grep -i "Sensor Reading"|/bin/cut -c 26-28
+
+具体的命令自己去查，这里只讲关键的：
+ipmitool -I open sensor thresh   配置ID值等于id的监测项的各种限制值。
+ipmitool -I open chassis status  查看主板状态，其中包括了主板电源信息，主板工作状态等
+ipmitool -I open chassis restart_cause  查看上次系统重启的原因
+ipmitool -I open chassis policy list  查看支持的底盘电源相关策略。
+ipmitool -I open chassis power on 启动底盘，用此命令能够远程开机
+ipmitool -I open chassis power off 关闭底盘，用此命令能够远程关机
+ipmitool -I open chassis power reset实现硬重启，用此命令能够远程重启
+ipmitool -I open mc reset 使BMC重新硬启动
+ipmitool -I open mc info 查看BMC硬件信息
+ipmitool -I open mc setenables =[on|off]，配置bmc相应的允许/禁止选项。
+ipmitool -I open mc getenables 列出BMC任何允许的选项
+ipmitool -I open lan print 1 打印现咱channel 1的信息 。
