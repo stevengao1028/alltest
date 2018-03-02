@@ -1,0 +1,13 @@
+import os
+os.popen
+r=os.popen('net use')
+print r.read()
+
+
+分析r.read()结果列出已有共享
+
+增加永久映射
+net use  * \\192.168.0.21\abc t123456 /user:test1 
+
+删除映射
+net use  Z: /DELETE
