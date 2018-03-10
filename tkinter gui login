@@ -1,0 +1,155 @@
+# -*- coding: utf-8 -*-
+from Tkinter import *
+from tkinter import ttk
+import subprocess,os
+from PIL import Image
+from PIL import ImageTk
+
+
+conpath=os.getcwd()
+confile=conpath+r"\share.txt"
+if not os.path.isfile(confile):
+    try:
+        file = open(confile, 'w')
+    finally:
+        if file:
+            file.close()
+
+class Logon ():
+    def __init__(self,root):
+        self.file = Image.open(r'd:\pic\login.jpg')
+        self.img = ImageTk.PhotoImage(self.file)
+        self.lab0 = Label(root,image=self.img)
+        self.lab0.grid()
+
+        self.ent1 = Entry(root,borderwidth = 2)
+        self.ent1.place(x=70,y=152)
+        self.ent2 = Entry(root, show="*",borderwidth =2)
+        self.ent2.place(x=70,y=180)
+        self.ent3 = Entry(root,borderwidth = 2)
+        self.ent3.place(x=70,y=208)
+        self.ent4 = Entry(root,borderwidth = 2)
+        self.ent4.place(x=70,y=235)
+
+        self.button1 = Button(root,width=20,bg="CornflowerBlue",text="提          交  ",command=self.Submit)
+        self.button1.place(x=68,y=280)
+
+
+        self.box = ttk.Combobox(width=25)
+        self.box.place(x=300,y=152)
+
+        self.button2 = Button(root,bg="CornflowerBlue", text="删      　   除",command=self.delshare,width=27)
+        self.button2.place(x=300,y=280)
+
+        self.loadconf()
+        self.putbox()
+
+        # self.box["state"] = "readonly"
+
+    def delshare(self):
+        if self.box.get().split():
+            device = self.box.get().split()[0]
+            path = self.box.get().split()[1]
+            ip =path.split('\\')[2]
+            share =path.split('\\')[3]
+            # print ip
+            cmd_del = "net use "+device+" /del "
+            # print cmd_del
+            # exe_result = subprocess.call(cmd_del)
+            exe_result= os.popen(cmd_del).read()
+            self.lab9["text"] = exe_result
+            print exe_result
+            # if exe_result == "Z: 已经删除。":
+            #     self.putbox()
+            #     with open(confile, "r") as f:
+            #         lines = f.readlines()
+            #         # print(lines)
+            #     with open(confile, "w") as f_w:
+            #         for line in lines:
+            #             if ip in line and share in line:
+            #                 continue
+            #             f_w.write(line)
+            #     self.lab9["text"] = "删除成功"
+            # else:
+            #     # self.lab9["text"] = "删除失败"
+            #     pass
+
+    def putbox(self):
+        diskinfo = self.getshare()
+        disklist = []
+        if len(diskinfo) > 0:
+            for each in diskinfo:
+                disklist.append(each['driver']+" "+each['path'])
+        else:
+            disklist.append("无共享")
+        self.box['values'] = disklist
+        self.box.current(0)
+
+
+    def loadconf(self):
+        diskinfo = self.getshare()
+        with open(confile, 'r') as f1:
+            for lines in f1.readlines():
+                line =lines.rstrip('\n')
+                user=line.split('##')[0]
+                password=line.split('##')[1]
+                ip=line.split('##')[2]
+                share=line.split('##')[3]
+                if len(diskinfo) > 0:
+                    for each in diskinfo:
+                        if share !=each['path']:
+                            continue
+                else:
+                    cmd_add = r"net use * \\" + ip + "\\" + share + " " + password + " /user:" + user
+                    # print cmd_add
+                    exe_result = subprocess.call(cmd_add)
+
+    def Submit(self):
+        user = self.ent1.get()
+        password = self.ent2.get()
+        ip = self.ent3.get()
+        share = self.ent4.get()
+        if not user or not password or not ip or not share:
+            self.lab9["text"] = "信息不能为空"
+            return 1
+        cmd_add = r"net use * \\"+ip+"\\"+share+" "+password+" /user:"+user
+        exe_result= subprocess.call(cmd_add)
+        # print cmd_add
+        # print exe_result
+        if exe_result == 0:
+            self.putbox()
+            with open(confile, 'a') as f:
+                f.write(user+"##"+password+"##"+ip+"##"+share+'\n')
+            self.lab9["text"] = "登录成功"
+        else:
+            self.lab9["text"] = "登录失败"
+        self.ent2.delete(0,len(password))
+
+    def getshare(self):
+        cmd_get = "net use"
+        cmd_result=os.popen(cmd_get).read()
+        share_list=[]
+        for line in cmd_result.split('\n'):
+            eachline=line.split()
+            if len(eachline) == 6 and eachline[3]=="Microsoft":
+                share = {'driver':eachline[1],'status':eachline[0],'path':eachline[2]}
+                # print share
+                share_list.append(share)
+        result = share_list
+        return result
+
+
+
+
+root = Tk()
+root.title("共享登录")
+#窗口大小
+width ,height= 520, 360
+#窗口居中显示
+root.geometry('%dx%d+%d+%d' % (width,height,(root.winfo_screenwidth() - width ) / 2, (root.winfo_screenheight() - height) / 2))
+#窗口最大值
+root.maxsize(520, 360)
+#窗口最小值
+root.minsize(520, 360)
+app = Logon(root)
+root.mainloop()
