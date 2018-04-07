@@ -1,0 +1,466 @@
+update all_data_shuang set 一二连=1 where n_two-n_one=1
+update all_data_shuang set 二三连=1 where n_three-n_two=1
+update all_data_shuang set 三四连=1 where n_four-n_three=1
+update all_data_shuang set 四五连=1 where n_five-n_four=1
+update all_data_shuang set 五六连=1 where n_six-n_five=1
+
+update all_data_shuang set 六连号=1 where n_two-n_one=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five=1
+
+update all_data_shuang set 五连号=1 where (n_two-n_one=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five!=1 ) or (n_two-n_one!=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five==1 )
+
+update all_data_shuang set 四连号=1 where (n_two-n_one=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four!=1) or (n_two-n_one!=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five!=1 )or
+(n_three-n_two!=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five=1 )
+
+
+
+update all_data_shuang set 三连号=1 where (n_two-n_one=1 and n_three-n_two=1 and n_four-n_three!=1 ) 
+or(n_two-n_one!=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four!=1)
+or(n_three-n_two!=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five!=1)
+or(n_four-n_three!=1 and n_five-n_four=1 and n_six-n_five=1)
+
+update all_data_shuang set 二连号一次=1 where (一二连=1 and 二三连!=1 and 三四连!=1 and 四五连!=1 and 五六连!=1)
+or (一二连!=1 and 二三连=1 and 三四连!=1 and 四五连!=1 and 五六连!=1)
+or (一二连!=1 and 二三连!=1 and 三四连=1 and 四五连!=1 and 五六连!=1)
+or (一二连!=1 and 二三连!=1 and 三四连!=1 and 四五连=1 and 五六连!=1)
+or (一二连!=1 and 二三连!=1 and 三四连!=1 and 四五连!=1 and 五六连=1)
+
+update all_data_shuang set 无连号=1 where 一二连!=1 and 二三连!=1 and 三四连!=1 and 四五连!=1 and 五六连!=1
+
+
+
+
+
+select * from all_data_shuang where 二连号一次=1  and sum >77 and sum <127 and 
+((oddeven ="3奇3偶" and largesmall ="3大3小") or
+(oddeven ="3奇3偶" and largesmall ="2大4小") or
+(oddeven ="3奇3偶" and largesmall ="4大2小") or
+(oddeven ="2奇4偶" and largesmall ="3大3小") or
+(oddeven ="4奇2偶" and largesmall ="3大3小") ) 
+and n_one != 1 and n_two !=1 and n_three != 1 and n_four !=1 and n_five !=1 and n_six !=1
+and n_one != 6 and n_two !=6 and n_three != 6 and n_four !=6 and n_five !=6 and n_six !=6
+and n_one != 7 and n_two !=7 and n_three != 7 and n_four !=7 and n_five !=7 and n_six !=7
+and n_one != 8 and n_two !=8 and n_three != 8 and n_four !=8 and n_five !=8 and n_six !=8
+and n_one != 9 and n_two !=9 and n_three != 9 and n_four !=9 and n_five !=9 and n_six !=9
+and n_one != 5 and n_two !=5 and n_three != 5 and n_four !=5 and n_five !=5 and n_six !=5
+and n_one != 3 and n_two !=3 and n_three != 3 and n_four !=3 and n_five !=3 and n_six !=3
+and n_one != 2 and n_two !=2 and n_three != 2 and n_four !=2 and n_five !=2 and n_six !=2
+and n_one != 11 and n_two !=11 and n_three != 11 and n_four !=11 and n_five !=11 and n_six !=11
+and n_one != 14 and n_two !=14 and n_three != 14 and n_four !=14 and n_five !=14 and n_six !=14
+and n_one != 15 and n_two !=15 and n_three != 15 and n_four !=15 and n_five !=15 and n_six !=15
+and n_one != 17 and n_two !=17 and n_three != 17 and n_four !=17 and n_five !=17 and n_six !=17
+and n_one != 18 and n_two !=18 and n_three != 18 and n_four !=18 and n_five !=18 and n_six !=18
+and n_one != 19 and n_two !=19 and n_three != 19 and n_four !=19 and n_five !=19 and n_six !=19
+and n_one != 20 and n_two !=20 and n_three != 20 and n_four !=20 and n_five !=20 and n_six !=20
+and n_one != 21 and n_two !=21 and n_three != 21 and n_four !=21 and n_five !=21 and n_six !=21
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+and n_one != 24 and n_two !=24 and n_three != 24 and n_four !=24 and n_five !=24 and n_six !=23
+and n_one != 25 and n_two !=25 and n_three != 25 and n_four !=25 and n_five !=25 and n_six !=25
+and n_one != 26 and n_two !=26 and n_three != 26 and n_four !=26 and n_five !=26 and n_six !=26
+and n_one != 27 and n_two !=27 and n_three != 27 and n_four !=27 and n_five !=27 and n_six !=27
+and n_one != 28 and n_two !=28 and n_three != 28 and n_four !=28 and n_five !=28 and n_six !=28
+
+
+
+select * from all_data_shuang where 无连号=1  and sum >77 and sum <127 and 
+((oddeven ="3奇3偶" and largesmall ="3大3小") or
+(oddeven ="3奇3偶" and largesmall ="2大4小") or
+(oddeven ="3奇3偶" and largesmall ="4大2小") or
+(oddeven ="2奇4偶" and largesmall ="3大3小") or
+(oddeven ="4奇2偶" and largesmall ="3大3小") ) 
+and n_one != 1 and n_two !=1 and n_three != 1 and n_four !=1 and n_five !=1 and n_six !=1
+and n_one != 5 and n_two !=5 and n_three != 5 and n_four !=5 and n_five !=5 and n_six !=5
+and n_one != 7 and n_two !=7 and n_three != 7 and n_four !=7 and n_five !=7 and n_six !=7
+and n_one != 10 and n_two !=10 and n_three != 10 and n_four !=10 and n_five !=10 and n_six !=10
+and n_one != 11 and n_two !=11 and n_three != 11 and n_four !=11 and n_five !=11 and n_six !=11
+and n_one != 17 and n_two !=17 and n_three != 17 and n_four !=17 and n_five !=17 and n_six !=17
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+and n_one != 23 and n_two !=23 and n_three != 23 and n_four !=23 and n_five !=23 and n_six !=23
+and n_one != 26 and n_two !=26 and n_three != 26 and n_four !=26 and n_five !=26 and n_six !=26
+and n_one != 28 and n_two !=28 and n_three != 28 and n_four !=28 and n_five !=28 and n_six !=28
+
+and 个位!="3" and 个位!="4" and  十位!="3" and 十位!="4" and  二十位!="3" and 二十位!="4" and 三十位!="3" 
+
+
+select * from all_data_shuang where 无连号=1  and sum >77 and sum <127 and 
+((oddeven ="3奇3偶" and largesmall ="3大3小") or
+(oddeven ="3奇3偶" and largesmall ="2大4小") or
+(oddeven ="3奇3偶" and largesmall ="4大2小") or
+(oddeven ="2奇4偶" and largesmall ="3大3小") or
+(oddeven ="4奇2偶" and largesmall ="3大3小") ) 
+and n_one != 1 and n_two !=1 and n_three != 1 and n_four !=1 and n_five !=1 and n_six !=1
+and n_one != 5 and n_two !=5 and n_three != 5 and n_four !=5 and n_five !=5 and n_six !=5
+and n_one != 7 and n_two !=7 and n_three != 7 and n_four !=7 and n_five !=7 and n_six !=7
+and n_one != 10 and n_two !=10 and n_three != 10 and n_four !=10 and n_five !=10 and n_six !=10
+and n_one != 11 and n_two !=11 and n_three != 11 and n_four !=11 and n_five !=11 and n_six !=11
+and n_one != 17 and n_two !=17 and n_three != 17 and n_four !=17 and n_five !=17 and n_six !=17
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+and n_one != 23 and n_two !=23 and n_three != 23 and n_four !=23 and n_five !=23 and n_six !=23
+and n_one != 26 and n_two !=26 and n_three != 26 and n_four !=26 and n_five !=26 and n_six !=26
+and n_one != 28 and n_two !=28 and n_three != 28 and n_four !=28 and n_five !=28 and n_six !=28
+and not (个位="4" or 十位="4" or 二十位="4" or 三十位="3")
+
+
+
+select *  from all_data_shuang where  sum =102
+and n_one != 13 and n_two !=13 and n_three != 13 and n_four !=13 and n_five !=13 and n_six !=13
+and n_one != 14 and n_two !=14 and n_three != 14 and n_four !=14 and n_five !=14 and n_six !=14
+and n_one != 15 and n_two !=15 and n_three != 15 and n_four !=15 and n_five !=15 and n_six !=15
+and n_one != 16 and n_two !=16 and n_three != 16 and n_four !=16 and n_five !=16 and n_six !=16
+and n_one != 17 and n_two !=17 and n_three != 17 and n_four !=17 and n_five !=17 and n_six !=17
+and n_one != 18 and n_two !=18 and n_three != 18 and n_four !=18 and n_five !=18 and n_six !=18
+and n_one != 19 and n_two !=19 and n_three != 19 and n_four !=19 and n_five !=19 and n_six !=19
+and n_one != 20 and n_two !=20 and n_three != 20 and n_four !=20 and n_five !=20 and n_six !=20
+and n_one != 21 and n_two !=21 and n_three != 21 and n_four !=21 and n_five !=21 and n_six !=21
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+
+
+1，基础条件高概率+
+2，排除容易出连号的期（算出连号的概率和不出连号的概率，或者根据以往的历史数据，判断连号概率），尽量选择2连号
+3，排除不容易出现的号码
+4，区域选择，个位，十位，二十位，三十位
+
+
+
+
+
+2奇4偶
+3奇3偶
+4奇2偶
+2大4小
+3大3小
+4大2小
+select *  from all_data_shuang where sum >80 and sum <109 and (oddeven ="2奇4偶" or oddeven ="3奇3偶" or oddeven ="4奇2偶")
+and (largesmall ="2大4小" or largesmall ="3大3小" or largesmall ="4大2小")
+/*and n_one != 1 and n_two !=1 and n_three != 1 and n_four !=1 and n_five !=1 and n_six !=1
+and n_one != 14 and n_two !=14 and n_three != 14 and n_four !=14 and n_five !=14 and n_six !=14
+and n_one != 15 and n_two !=15 and n_three != 15 and n_four !=15 and n_five !=15 and n_six !=15
+and n_one != 16 and n_two !=16 and n_three != 16 and n_four !=16 and n_five !=16 and n_six !=16
+and n_one != 17 and n_two !=17 and n_three != 17 and n_four !=17 and n_five !=17 and n_six !=17
+and n_one != 18 and n_two !=18 and n_three != 18 and n_four !=18 and n_five !=18 and n_six !=18
+and n_one != 19 and n_two !=19 and n_three != 19 and n_four !=19 and n_five !=19 and n_six !=19
+and n_one != 20 and n_two !=20 and n_three != 20 and n_four !=20 and n_five !=20 and n_six !=20
+and n_one != 21 and n_two !=21 and n_three != 21 and n_four !=21 and n_five !=21 and n_six !=21
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+and n_one != 24 and n_two !=24 and n_three != 24 and n_four !=24 and n_five !=24 and n_six !=24
+and n_one != 23 and n_two !=23 and n_three != 23 and n_four !=23 and n_five !=23 and n_six !=23
+and n_one != 25 and n_two !=25 and n_three != 25 and n_four !=25 and n_five !=25 and n_six !=25*/
+
+
+select *  from all_data_shuang where sum =101 and (oddeven ="2奇4偶" or oddeven ="3奇3偶" or oddeven ="4奇2偶")
+and (largesmall ="2大4小" or largesmall ="3大3小" or largesmall ="4大2小")
+and n_one != 1 and n_two !=1 and n_three != 1 and n_four !=1 and n_five !=1 and n_six !=1
+and n_one != 6 and n_two !=6 and n_three != 6 and n_four !=6 and n_five !=6 and n_six !=6
+and n_one != 7 and n_two !=7 and n_three != 7 and n_four !=7 and n_five !=7 and n_six !=7
+and n_one != 8 and n_two !=8 and n_three != 8 and n_four !=8 and n_five !=8 and n_six !=8
+and n_one != 9 and n_two !=9 and n_three != 9 and n_four !=9 and n_five !=9 and n_six !=9
+and n_one != 5 and n_two !=5 and n_three != 5 and n_four !=5 and n_five !=5 and n_six !=5
+and n_one != 3 and n_two !=3 and n_three != 3 and n_four !=3 and n_five !=3 and n_six !=3
+and n_one != 2 and n_two !=2 and n_three != 2 and n_four !=2 and n_five !=2 and n_six !=2
+and n_one != 14 and n_two !=14 and n_three != 14 and n_four !=14 and n_five !=14 and n_six !=14
+and n_one != 15 and n_two !=15 and n_three != 15 and n_four !=15 and n_five !=15 and n_six !=15
+and n_one != 17 and n_two !=17 and n_three != 17 and n_four !=17 and n_five !=17 and n_six !=17
+and n_one != 18 and n_two !=18 and n_three != 18 and n_four !=18 and n_five !=18 and n_six !=18
+and n_one != 19 and n_two !=19 and n_three != 19 and n_four !=19 and n_five !=19 and n_six !=19
+and n_one != 20 and n_two !=20 and n_three != 20 and n_four !=20 and n_five !=20 and n_six !=20
+and n_one != 21 and n_two !=21 and n_three != 21 and n_four !=21 and n_five !=21 and n_six !=21
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+and n_one != 24 and n_two !=24 and n_three != 24 and n_four !=24 and n_five !=24 and n_six !=23
+and n_one != 25 and n_two !=25 and n_three != 25 and n_four !=25 and n_five !=25 and n_six !=25
+
+
+
+
+1,和值范围
+2,奇偶范围
+3,大小范围
+4,连号情况,二连号一次（比率43%左右），无连号（比率34%左右），二连号一次概率略大于无连号，
+5,去除三奇或三偶或四奇或四偶在同一位数，如0-9，10-19，20-29
+5,排除号码，需要在设定一定方法，使范围缩小
+6,去除
+6,上期重复，如有在排除号码中去除
+7,特别号用守号的方法，先选在出现最少的号码，若差值在10以内，改为则人为预测
+
+二连号一次连号基础语句
+select * from all_data_shuang where 二连号一次=1  and sum >87 and sum <117 and 
+((oddeven ="3奇3偶" and largesmall ="3大3小") or
+(oddeven ="3奇3偶" and largesmall ="2大4小") or
+(oddeven ="3奇3偶" and largesmall ="4大2小") or
+(oddeven ="2奇4偶" and largesmall ="3大3小") or
+(oddeven ="4奇2偶" and largesmall ="3大3小") )
+
+无连号基础语句
+select * from all_data_shuang where 无连号=1  and sum >87 and sum <117 and 
+((oddeven ="3奇3偶" and largesmall ="3大3小") or
+(oddeven ="3奇3偶" and largesmall ="2大4小") or
+(oddeven ="3奇3偶" and largesmall ="4大2小") or
+(oddeven ="2奇4偶" and largesmall ="3大3小") or
+(oddeven ="4奇2偶" and largesmall ="3大3小") )
+
+
+update all_data_shuang set sum=n_one+n_two+n_three+n_four+n_five+n_six
+delete from all_data_shuang
+
+update all_data_shuang set 五连号=0 
+update all_data_shuang set 六连号=0 
+update all_data_shuang set 四连号=0
+update all_data_shuang set 三连号=0
+update all_data_shuang set 二连号一次=0
+update all_data_shuang set 无连号=0
+
+
+update all_data_shuang set 一二连=1 where n_two-n_one=1
+update all_data_shuang set 二三连=1 where n_three-n_two=1
+update all_data_shuang set 三四连=1 where n_four-n_three=1
+update all_data_shuang set 四五连=1 where n_five-n_four=1
+update all_data_shuang set 五六连=1 where n_six-n_five=1
+
+
+update all_data_shuang set 六连号=1 where n_two-n_one=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five=1
+
+update all_data_shuang set 五连号=1 where (n_two-n_one=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five!=1 ) or (n_two-n_one!=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five==1 )
+
+update all_data_shuang set 四连号=1 where (n_two-n_one=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four!=1) or (n_two-n_one!=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five!=1 )or
+(n_three-n_two!=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five=1 )
+
+
+
+update all_data_shuang set 三连号=1 where (n_two-n_one=1 and n_three-n_two=1 and n_four-n_three!=1 ) 
+or(n_two-n_one!=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four!=1)
+or(n_three-n_two!=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five!=1)
+or(n_four-n_three!=1 and n_five-n_four=1 and n_six-n_five=1)
+
+update all_data_shuang set 二连号一次=1 where (一二连=1 and 二三连!=1 and 三四连!=1 and 四五连!=1 and 五六连!=1)
+or (一二连!=1 and 二三连=1 and 三四连!=1 and 四五连!=1 and 五六连!=1)
+or (一二连!=1 and 二三连!=1 and 三四连=1 and 四五连!=1 and 五六连!=1)
+or (一二连!=1 and 二三连!=1 and 三四连!=1 and 四五连=1 and 五六连!=1)
+or (一二连!=1 and 二三连!=1 and 三四连!=1 and 四五连!=1 and 五六连=1)
+
+update all_data_shuang set 无连号=1 where 一二连!=1 and 二三连!=1 and 三四连!=1 and 四五连!=1 and 五六连!=1
+
+
+#六连号查询
+select * from all_data_shuang where (n_two-n_one=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five!=1 ) or (n_two-n_one!=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five==1 )
+#五连号查询
+select * from all_data_shuang where (n_two-n_one=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five!=1 ) or (n_two-n_one!=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five==1 )
+
+
+#四连号查询
+select * from all_data_shuang where (n_two-n_one=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four!=1) or (n_two-n_one!=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five!=1 )or
+(n_three-n_two!=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five=1 )
+
+
+#三连号查询
+select * from all_data_shuang where (n_two-n_one=1 and n_three-n_two=1 and n_four-n_three!=1 ) 
+or(n_two-n_one!=1 and n_three-n_two=1 and n_four-n_three=1 and n_five-n_four!=1)
+or(n_three-n_two!=1 and n_four-n_three=1 and n_five-n_four=1 and n_six-n_five!=1)
+or(n_four-n_three!=1 and n_five-n_four=1 and n_six-n_five=1)
+
+#二连号只有一个
+select * from all_data_shuang where 
+   (一二连=1 and 二三连!=1 and 三四连!=1 and 四五连!=1 and 五六连!=1)
+or (一二连!=1 and 二三连=1 and 三四连!=1 and 四五连!=1 and 五六连!=1)
+or (一二连!=1 and 二三连!=1 and 三四连=1 and 四五连!=1 and 五六连!=1)
+or (一二连!=1 and 二三连!=1 and 三四连!=1 and 四五连=1 and 五六连!=1)
+or (一二连!=1 and 二三连!=1 and 三四连!=1 and 四五连!=1 and 五六连=1)
+
+select * from all_data_shuang where 二连号一次=1
+
+#无连号
+
+select * from all_data_shuang where 无连号=1 
+
+#无连号大小奇偶单双概率大
+
+select * from all_data_shuang where 无连号=1  and sum >87 and sum <117 and (oddeven ="2奇4偶" or oddeven ="3奇3偶" or oddeven ="4奇2偶")and (largesmall ="2大4小" or largesmall ="3大3小" or largesmall ="4大2小")
+
+
+
+#有连号大小奇偶单双概率大
+select * from all_data_shuang where 二连号一次=1  and sum >67 and sum <137 and (oddeven ="2奇4偶" or oddeven ="3奇3偶" or oddeven ="4奇2偶")and (largesmall ="2大4小" or largesmall ="3大3小" or largesmall ="4大2小") 
+and n_one != 13 and n_two !=13 and n_three != 13 and n_four !=13 and n_five !=13 and n_six !=13
+and n_one != 15 and n_two !=15 and n_three != 15 and n_four !=15 and n_five !=15 and n_six !=15
+and n_one != 16 and n_two !=16 and n_three != 16 and n_four !=16 and n_five !=16 and n_six !=16
+and n_one != 17 and n_two !=17 and n_three != 17 and n_four !=17 and n_five !=17 and n_six !=17
+and n_one != 18 and n_two !=18 and n_three != 18 and n_four !=18 and n_five !=18 and n_six !=18
+and n_one != 19 and n_two !=19 and n_three != 19 and n_four !=19 and n_five !=19 and n_six !=19
+and n_one != 20 and n_two !=20 and n_three != 20 and n_four !=20 and n_five !=20 and n_six !=20
+and n_one != 21 and n_two !=21 and n_three != 21 and n_four !=21 and n_five !=21 and n_six !=21
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+
+
+select * from all_data_shuang where 二连号一次=1  and sum >67 and sum <137 and (oddeven ="4奇2偶" or oddeven ="3奇3偶")and (largesmall ="2大4小"  or largesmall ="4大2小")
+
+
+
+
+select * from all_data_shuang where 二连号一次=1  and sum >100 and sum <109 and and (largesmall ="2大4小" )
+and n_one != 13 and n_two !=13 and n_three != 13 and n_four !=13 and n_five !=13 and n_six !=13
+and n_one != 15 and n_two !=15 and n_three != 15 and n_four !=15 and n_five !=15 and n_six !=15
+and n_one != 16 and n_two !=16 and n_three != 16 and n_four !=16 and n_five !=16 and n_six !=16
+and n_one != 17 and n_two !=17 and n_three != 17 and n_four !=17 and n_five !=17 and n_six !=17
+and n_one != 18 and n_two !=18 and n_three != 18 and n_four !=18 and n_five !=18 and n_six !=18
+and n_one != 19 and n_two !=19 and n_three != 19 and n_four !=19 and n_five !=19 and n_six !=19
+and n_one != 20 and n_two !=20 and n_three != 20 and n_four !=20 and n_five !=20 and n_six !=20
+and n_one != 21 and n_two !=21 and n_three != 21 and n_four !=21 and n_five !=21 and n_six !=21
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+
+
+
+#个位数量
+update all_data_shuang set 个位=3 where  n_four>9 and n_three<10
+#十位数量
+update all_data_shuang set 十位=5 where   n_six>9 and n_six<20 and n_one>9 and n_six<20
+-- DECLARE @a int
+--select *, ( case when n_one in(10,11,12,13,14,15,16,17,18,19) then set @a=1 else 0 END) AA
+--from all_data_shuang
+
+
+
+select * from all_data_shuang where n_six>9 and n_five>9 and n_four>9 and n_three>9 and n_two>9 and n_one <10
+
+
+
+
+select * from all_data_shuang where 无连号=1  and sum >70 and sum <100 and  oddeven ="3奇3偶"and largesmall ="2大4小" 
+and n_one != 8 and n_two !=8 and n_three != 8 and n_four !=8 and n_five !=8 and n_six !=8
+and n_one != 17 and n_two !=17 and n_three != 17 and n_four !=17 and n_five !=17 and n_six !=17
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+and n_one != 23 and n_two !=23 and n_three != 23 and n_four !=23 and n_five !=23 and n_six !=23
+and n_one != 24 and n_two !=24 and n_three != 24 and n_four !=24 and n_five !=24 and n_six !=24
+and n_one != 26 and n_two !=26 and n_three != 26 and n_four !=26 and n_five !=26 and n_six !=26
+and n_one != 28 and n_two !=28 and n_three != 28 and n_four !=28 and n_five !=28 and n_six !=28
+and n_one != 31 and n_two !=31 and n_three != 31 and n_four !=31 and n_five !=31 and n_six !=31
+and n_one != 32 and n_two !=32 and n_three != 32 and n_four !=32 and n_five !=32 and n_six !=32
+and n_one != 33 and n_two !=33 and n_three != 33 and n_four !=33 and n_five !=33 and n_six !=33
+
+
+select * from all_data_shuang where 二连号一次=1  and sum >100 and sum <117 and 
+((oddeven ="3奇3偶" and largesmall ="3大3小") or
+(oddeven ="3奇3偶" and largesmall ="2大4小") or
+(oddeven ="3奇3偶" and largesmall ="4大2小") or
+(oddeven ="2奇4偶" and largesmall ="3大3小") or
+(oddeven ="4奇2偶" and largesmall ="3大3小") )
+and n_one != 1 and n_two !=1 and n_three != 1 and n_four !=1 and n_five !=1 and n_six !=1 
+and n_one != 5 and n_two !=5 and n_three != 5 and n_four !=5 and n_five !=5 and n_six !=5
+and n_one != 6 and n_two !=6 and n_three != 6 and n_four !=6 and n_five !=6 and n_six !=6
+and n_one != 8 and n_two !=8 and n_three != 8 and n_four !=8 and n_five !=8 and n_six !=8
+and n_one != 7 and n_two !=7 and n_three != 7 and n_four !=7 and n_five !=7 and n_six !=7
+and n_one != 9 and n_two !=9 and n_three != 9 and n_four !=9 and n_five !=9 and n_six !=9
+and n_one != 13 and n_two !=13 and n_three != 13 and n_four !=13 and n_five !=13 and n_six !=13
+and n_one != 15 and n_two !=15 and n_three != 15 and n_four !=15 and n_five !=15 and n_six !=15
+and n_one != 18 and n_two !=18 and n_three != 18 and n_four !=18 and n_five !=18 and n_six !=18
+and n_one != 19 and n_two !=19 and n_three != 19 and n_four !=19 and n_five !=19 and n_six !=19
+and n_one != 20 and n_two !=20 and n_three != 20 and n_four !=20 and n_five !=20 and n_six !=20
+and n_one != 21 and n_two !=21 and n_three != 21 and n_four !=21 and n_five !=21 and n_six !=21
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+and n_one != 23 and n_two !=23 and n_three != 23 and n_four !=23 and n_five !=23 and n_six !=23
+and n_one != 25 and n_two !=25 and n_three != 25 and n_four !=25 and n_five !=25 and n_six !=25
+and n_one != 27 and n_two !=27 and n_three != 27 and n_four !=27 and n_five !=27 and n_six !=27
+and n_one != 28 and n_two !=28 and n_three != 28 and n_four !=28 and n_five !=28 and n_six !=28
+and n_one != 29 and n_two !=29 and n_three != 29 and n_four !=29 and n_five !=29 and n_six !=29
+and n_one != 30 and n_two !=30 and n_three != 30 and n_four !=30 and n_five !=30 and n_six !=30
+and n_one != 33 and n_two !=33 and n_three != 33 and n_four !=33 and n_five !=33 and n_six !=33
+
+select * from all_data_shuang where 无连号=1  and sum >70 and sum <100 and  oddeven ="3奇3偶"and largesmall ="2大4小" 
+and n_one != 8 and n_two !=8 and n_three != 8 and n_four !=8 and n_five !=8 and n_six !=8
+and n_one != 17 and n_two !=17 and n_three != 17 and n_four !=17 and n_five !=17 and n_six !=17
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+and n_one != 23 and n_two !=23 and n_three != 23 and n_four !=23 and n_five !=23 and n_six !=23
+and n_one != 24 and n_two !=24 and n_three != 24 and n_four !=24 and n_five !=24 and n_six !=24
+and n_one != 26 and n_two !=26 and n_three != 26 and n_four !=26 and n_five !=26 and n_six !=26
+and n_one != 28 and n_two !=28 and n_three != 28 and n_four !=28 and n_five !=28 and n_six !=28
+and n_one != 31 and n_two !=31 and n_three != 31 and n_four !=31 and n_five !=31 and n_six !=31
+and n_one != 32 and n_two !=32 and n_three != 32 and n_four !=32 and n_five !=32 and n_six !=32
+and n_one != 33 and n_two !=33 and n_three != 33 and n_four !=33 and n_five !=33 and n_six !=33
+
+
+select * from all_data_shuang where 三连号=1  and sum >77 and sum <127 and 
+((oddeven ="3奇3偶" and largesmall ="3大3小") or
+(oddeven ="3奇3偶" and largesmall ="2大4小") or
+(oddeven ="3奇3偶" and largesmall ="4大2小") or
+(oddeven ="2奇4偶" and largesmall ="3大3小") or
+(oddeven ="4奇2偶" and largesmall ="3大3小") )
+and n_one != 1 and n_two !=1 and n_three != 1 and n_four !=1 and n_five !=1 and n_six !=1 
+and n_one != 5 and n_two !=5 and n_three != 5 and n_four !=5 and n_five !=5 and n_six !=5
+and n_one != 6 and n_two !=6 and n_three != 6 and n_four !=6 and n_five !=6 and n_six !=6
+and n_one != 8 and n_two !=8 and n_three != 8 and n_four !=8 and n_five !=8 and n_six !=8
+and n_one != 7 and n_two !=7 and n_three != 7 and n_four !=7 and n_five !=7 and n_six !=7
+and n_one != 9 and n_two !=9 and n_three != 9 and n_four !=9 and n_five !=9 and n_six !=9
+and n_one != 13 and n_two !=13 and n_three != 13 and n_four !=13 and n_five !=13 and n_six !=13
+and n_one != 15 and n_two !=15 and n_three != 15 and n_four !=15 and n_five !=15 and n_six !=15
+and n_one != 18 and n_two !=18 and n_three != 18 and n_four !=18 and n_five !=18 and n_six !=18
+and n_one != 19 and n_two !=19 and n_three != 19 and n_four !=19 and n_five !=19 and n_six !=19
+and n_one != 20 and n_two !=20 and n_three != 20 and n_four !=20 and n_five !=20 and n_six !=20
+and n_one != 21 and n_two !=21 and n_three != 21 and n_four !=21 and n_five !=21 and n_six !=21
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+and n_one != 23 and n_two !=23 and n_three != 23 and n_four !=23 and n_five !=23 and n_six !=23
+and n_one != 25 and n_two !=25 and n_three != 25 and n_four !=25 and n_five !=25 and n_six !=25
+and n_one != 27 and n_two !=27 and n_three != 27 and n_four !=27 and n_five !=27 and n_six !=27
+and n_one != 28 and n_two !=28 and n_three != 28 and n_four !=28 and n_five !=28 and n_six !=28
+and n_one != 29 and n_two !=29 and n_three != 29 and n_four !=29 and n_five !=29 and n_six !=29
+and n_one != 30 and n_two !=30 and n_three != 30 and n_four !=30 and n_five !=30 and n_six !=30
+and n_one != 33 and n_two !=33 and n_three != 33 and n_four !=33 and n_five !=33 and n_six !=33
+
+
+
+select * from all_data_shuang where 二连号一次=1  and sum >87 and sum <117 and 
+((oddeven ="3奇3偶" and largesmall ="3大3小") or
+(oddeven ="3奇3偶" and largesmall ="2大4小") or
+(oddeven ="3奇3偶" and largesmall ="4大2小") or
+(oddeven ="2奇4偶" and largesmall ="3大3小") or
+(oddeven ="4奇2偶" and largesmall ="3大3小") ) and
+n_two>9 and n_four>19 and n_six>29
+
+select * from all_data_shuang where 二连号一次=1  and sum >77 and sum <127 and 
+((oddeven ="3奇3偶" and largesmall ="3大3小") or
+(oddeven ="3奇3偶" and largesmall ="2大4小") or
+(oddeven ="3奇3偶" and largesmall ="4大2小") or
+(oddeven ="2奇4偶" and largesmall ="3大3小") or
+(oddeven ="4奇2偶" and largesmall ="3大3小") ) 
+and n_one != 1 and n_two !=1 and n_three != 1 and n_four !=1 and n_five !=1 and n_six !=1
+and n_one != 6 and n_two !=6 and n_three != 6 and n_four !=6 and n_five !=6 and n_six !=6
+and n_one != 7 and n_two !=7 and n_three != 7 and n_four !=7 and n_five !=7 and n_six !=7
+and n_one != 8 and n_two !=8 and n_three != 8 and n_four !=8 and n_five !=8 and n_six !=8
+and n_one != 9 and n_two !=9 and n_three != 9 and n_four !=9 and n_five !=9 and n_six !=9
+and n_one != 5 and n_two !=5 and n_three != 5 and n_four !=5 and n_five !=5 and n_six !=5
+and n_one != 3 and n_two !=3 and n_three != 3 and n_four !=3 and n_five !=3 and n_six !=3
+and n_one != 2 and n_two !=2 and n_three != 2 and n_four !=2 and n_five !=2 and n_six !=2
+and n_one != 11 and n_two !=11 and n_three != 11 and n_four !=11 and n_five !=11 and n_six !=11
+and n_one != 14 and n_two !=14 and n_three != 14 and n_four !=14 and n_five !=14 and n_six !=14
+and n_one != 15 and n_two !=15 and n_three != 15 and n_four !=15 and n_five !=15 and n_six !=15
+and n_one != 17 and n_two !=17 and n_three != 17 and n_four !=17 and n_five !=17 and n_six !=17
+and n_one != 18 and n_two !=18 and n_three != 18 and n_four !=18 and n_five !=18 and n_six !=18
+and n_one != 19 and n_two !=19 and n_three != 19 and n_four !=19 and n_five !=19 and n_six !=19
+and n_one != 20 and n_two !=20 and n_three != 20 and n_four !=20 and n_five !=20 and n_six !=20
+and n_one != 21 and n_two !=21 and n_three != 21 and n_four !=21 and n_five !=21 and n_six !=21
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+and n_one != 24 and n_two !=24 and n_three != 24 and n_four !=24 and n_five !=24 and n_six !=23
+and n_one != 25 and n_two !=25 and n_three != 25 and n_four !=25 and n_five !=25 and n_six !=25
+and n_one != 26 and n_two !=26 and n_three != 26 and n_four !=26 and n_five !=26 and n_six !=26
+and n_one != 27 and n_two !=27 and n_three != 27 and n_four !=27 and n_five !=27 and n_six !=27
+and n_one != 28 and n_two !=28 and n_three != 28 and n_four !=28 and n_five !=28 and n_six !=28
+
+
+
+select * from all_data_shuang where 无连号=1  and sum >77 and sum <127 and 
+((oddeven ="3奇3偶" and largesmall ="3大3小") or
+(oddeven ="3奇3偶" and largesmall ="2大4小") or
+(oddeven ="3奇3偶" and largesmall ="4大2小") or
+(oddeven ="2奇4偶" and largesmall ="3大3小") or
+(oddeven ="4奇2偶" and largesmall ="3大3小") ) 
+and n_one != 1 and n_two !=1 and n_three != 1 and n_four !=1 and n_five !=1 and n_six !=1
+and n_one != 5 and n_two !=5 and n_three != 5 and n_four !=5 and n_five !=5 and n_six !=5
+and n_one != 7 and n_two !=7 and n_three != 7 and n_four !=7 and n_five !=7 and n_six !=7
+and n_one != 10 and n_two !=10 and n_three != 10 and n_four !=10 and n_five !=10 and n_six !=10
+and n_one != 11 and n_two !=11 and n_three != 11 and n_four !=11 and n_five !=11 and n_six !=11
+and n_one != 17 and n_two !=17 and n_three != 17 and n_four !=17 and n_five !=17 and n_six !=17
+and n_one != 22 and n_two !=22 and n_three != 22 and n_four !=22 and n_five !=22 and n_six !=22
+and n_one != 23 and n_two !=23 and n_three != 23 and n_four !=23 and n_five !=23 and n_six !=23
+and n_one != 26 and n_two !=26 and n_three != 26 and n_four !=26 and n_five !=26 and n_six !=26
+and n_one != 28 and n_two !=28 and n_three != 28 and n_four !=28 and n_five !=28 and n_six !=28
+
+
+
+
+
+select * from all_data_shuang where 个位="4" or 十位="4" or 二十位="4" or 三十位="3"
